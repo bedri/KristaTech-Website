@@ -125,10 +125,11 @@ onUnmounted(() => {
             color="neutral"
             variant="ghost"
             icon="i-simple-icons-github"
+            label="GitHub"
             size="sm"
-            aria-label="GitHub"
-            class="cursor-pointer"
+            class="font-medium cursor-pointer"
           />
+
         </div>
       </UContainer>
     </header>

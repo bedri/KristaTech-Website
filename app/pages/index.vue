@@ -4,8 +4,18 @@ import { useI18n } from '~/composables/useI18n'
 
 const { t } = useI18n()
 
+// Fetch real-time status from our server API proxy
+const { data: statusData } = await useFetch('/api/status')
+
 // 1. Hero Countdown Milestones
 const currentBlock = ref(997)
+const masternodesCount = computed(() => {
+  return statusData.value?.masternodes?.enabled || 1248
+})
+const circulatingSupply = computed(() => {
+  return statusData.value?.totalSupply || 54280000
+})
+
 const blocksRemaining = computed(() => Math.max(0, 1000 - currentBlock.value))
 const progressPercentage = computed(() => (currentBlock.value / 1000) * 100)
 
@@ -14,6 +24,13 @@ function simulateBlock() {
     currentBlock.value++
   }
 }
+
+onMounted(() => {
+  if (statusData.value?.success && typeof statusData.value?.height === 'number') {
+    currentBlock.value = statusData.value.height
+  }
+})
+
 
 // 2. Interactive Feature: ADAM Consensus
 const isSimulatingConsensus = ref(false)
@@ -221,7 +238,7 @@ const requiredCollateral = computed(() => {
             <UIcon name="i-heroicons-cpu-chip" class="w-24 h-24 text-salmon-400" />
           </div>
           <span class="text-xs font-semibold uppercase tracking-wider text-gray-500">{{ t('activeMasternodes') }}</span>
-          <span class="text-3xl font-extrabold text-white mt-2">1,248</span>
+          <span class="text-3xl font-extrabold text-white mt-2">{{ masternodesCount.toLocaleString() }}</span>
           <span class="text-[10px] text-salmon-400 font-medium mt-1">With 15k-20k collateral</span>
         </div>
 
@@ -230,9 +247,10 @@ const requiredCollateral = computed(() => {
             <UIcon name="i-heroicons-banknotes" class="w-24 h-24 text-slate-blue-400" />
           </div>
           <span class="text-xs font-semibold uppercase tracking-wider text-gray-500">{{ t('currentSupply') }}</span>
-          <span class="text-3xl font-extrabold text-white mt-2">54,280,000</span>
+          <span class="text-3xl font-extrabold text-white mt-2">{{ circulatingSupply.toLocaleString() }}</span>
           <span class="text-[10px] text-slate-blue-400 font-medium mt-1">100,000,000 Hard Cap</span>
         </div>
+
 
         <div class="glass-card rounded-2xl p-6 border border-white/5 flex flex-col justify-center items-center shadow-lg relative overflow-hidden group">
           <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity duration-300">
@@ -581,11 +599,19 @@ const requiredCollateral = computed(() => {
           <!-- Phase 2 -->
           <div class="relative flex flex-col md:flex-row items-center gap-8 group">
             <!-- Bullet point node -->
-            <div class="w-6 h-6 rounded-full border-4 border-[#0b0f19] bg-slate-blue-500 shadow-lg shadow-slate-blue-500/30 z-10 shrink-0 md:order-2"></div>
+            <div 
+              class="w-6 h-6 rounded-full border-4 border-[#0b0f19] shadow-lg z-10 shrink-0 md:order-2"
+              :class="currentBlock >= 1000 ? 'bg-salmon-500 shadow-salmon-500/50' : 'bg-slate-blue-500 shadow-slate-blue-500/30'"
+            ></div>
 
             <div class="flex-1 glass-card rounded-2xl p-6 border border-white/5 shadow-md pr-8 text-left md:text-right md:order-1">
               <div class="mb-2">
-                <span class="text-xs font-bold text-slate-blue-400 uppercase tracking-widest bg-slate-blue-500/10 px-3 py-1 rounded-full border border-slate-blue-500/20">Next Phase</span>
+                <span 
+                  class="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full border"
+                  :class="currentBlock >= 1000 ? 'text-salmon-400 bg-salmon-500/10 border-salmon-500/20' : 'text-slate-blue-400 bg-slate-blue-500/10 border-slate-blue-500/20'"
+                >
+                  {{ currentBlock >= 1000 ? 'Active' : 'Next Phase' }}
+                </span>
               </div>
               <h3 class="text-lg font-bold text-white">{{ t('phase2') }}</h3>
               <p class="text-gray-400 text-sm mt-2 leading-relaxed">
@@ -596,18 +622,32 @@ const requiredCollateral = computed(() => {
             <div class="flex-1 hidden md:block"></div>
           </div>
 
+
           <!-- Phase 3 -->
           <div class="relative flex flex-col md:flex-row items-center gap-8 group">
             <div class="flex-1 text-right hidden md:block pr-8">
-              <span class="text-xs font-bold text-gray-500 uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full border border-white/5">Future</span>
+              <span 
+                class="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full border"
+                :class="currentBlock >= 5000 ? 'text-salmon-400 bg-salmon-500/10 border-salmon-500/20' : 'text-gray-500 bg-white/5 border-white/5'"
+              >
+                {{ currentBlock >= 5000 ? 'Active' : 'Future' }}
+              </span>
             </div>
 
             <!-- Bullet point node -->
-            <div class="w-6 h-6 rounded-full border-4 border-[#0b0f19] bg-white/20 shadow-md z-10 shrink-0"></div>
+            <div 
+              class="w-6 h-6 rounded-full border-4 border-[#0b0f19] shadow-md z-10 shrink-0"
+              :class="currentBlock >= 5000 ? 'bg-salmon-500 shadow-salmon-500/50' : 'bg-white/20'"
+            ></div>
 
             <div class="flex-1 glass-card rounded-2xl p-6 border border-white/5 shadow-md pl-8 text-left">
               <div class="md:hidden mb-2">
-                <span class="text-xs font-bold text-gray-500 uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full border border-white/5">Future</span>
+                <span 
+                  class="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full border"
+                  :class="currentBlock >= 5000 ? 'text-salmon-400 bg-salmon-500/10 border-salmon-500/20' : 'text-gray-500 bg-white/5 border-white/5'"
+                >
+                  {{ currentBlock >= 5000 ? 'Active' : 'Future' }}
+                </span>
               </div>
               <h3 class="text-lg font-bold text-white">{{ t('phase3') }}</h3>
               <p class="text-gray-400 text-sm mt-2 leading-relaxed">
@@ -615,6 +655,7 @@ const requiredCollateral = computed(() => {
               </p>
             </div>
           </div>
+
         </div>
       </div>
     </section>
