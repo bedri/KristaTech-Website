@@ -45,19 +45,20 @@ onUnmounted(() => {
     <header class="sticky top-0 z-50 bg-[#0b0f19]/80 backdrop-blur-md border-b border-white/5 py-4">
       <UContainer class="flex items-center justify-between">
         <!-- Logo / Branding -->
-        <a href="#" class="flex items-center gap-3 group">
-          <div class="w-10 h-10 rounded-xl border border-white/10 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-300 p-1.5 bg-gradient-to-b from-slate-900 to-[#0b0f19]">
+        <a href="#" class="flex items-center gap-4 group">
+          <div class="w-14 h-14 rounded-2xl border border-white/10 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-300 p-1.5 bg-gradient-to-b from-slate-900 to-[#0b0f19]">
             <img src="/logo.svg" alt="KristaTech Logo" class="w-full h-full object-contain" />
           </div>
           <div>
-            <h1 class="font-bold text-lg tracking-wider text-white flex items-center gap-1.5">
+            <h1 class="font-extrabold text-2xl tracking-wider text-white flex items-center gap-2">
               KRISTA
-              <span class="text-[10px] font-semibold tracking-normal px-2 py-0.5 rounded bg-salmon-500/10 text-salmon-400 border border-salmon-500/20">
+              <span class="text-[11px] font-bold tracking-normal px-2.5 py-0.5 rounded bg-salmon-500/10 text-salmon-400 border border-salmon-500/20">
                 BLOCKCHAIN
               </span>
             </h1>
           </div>
         </a>
+
 
         <!-- Desktop Navigation -->
         <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-400">
@@ -141,9 +142,10 @@ onUnmounted(() => {
     <footer class="bg-slate-950/80 border-t border-white/5 py-10 mt-auto">
       <UContainer class="flex flex-col md:flex-row items-center justify-between gap-6 text-sm text-gray-500">
         <div class="flex items-center gap-3">
-          <img src="/logo.svg" alt="KristaTech Logo" class="w-6 h-6 opacity-80" />
+          <img src="/logo.svg" alt="KristaTech Logo" class="w-8 h-8 opacity-80" />
           <div>
             <span class="font-bold text-gray-400 tracking-wider">KRISTA</span>
+
             <span class="text-xs text-gray-600 block sm:inline sm:ml-2">{{ t('brandTagline') }}</span>
           </div>
         </div>
