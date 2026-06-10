@@ -10,16 +10,23 @@ const { data: statusData, refresh } = await useFetch('/api/status', {
 })
 
 // 1. Hero Countdown Milestones
-const currentBlock = ref(statusData.value?.height || 950)
+const currentBlock = ref(statusData.value?.height ?? 950)
 const masternodesCount = computed(() => {
-  return statusData.value?.masternodes?.enabled || 128
+  return statusData.value?.masternodes?.enabled ?? 0
 })
 const circulatingSupply = computed(() => {
-  return statusData.value?.totalSupply || 5085400
+  return statusData.value?.totalSupply ?? 5085400
 })
 
 const blocksRemaining = computed(() => Math.max(0, 1000 - currentBlock.value))
 const progressPercentage = computed(() => Math.min(100, (currentBlock.value / 1000) * 100))
+
+function scrollToSection(id) {
+  const element = document.getElementById(id)
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth' })
+  }
+}
 
 function simulateBlock() {
   if (currentBlock.value < 1000) {
@@ -140,7 +147,7 @@ OP_END_CONTRACT`
 })
 
 // 5. Interactive Tokenomics Calculator
-const calcHeight = ref(statusData.value?.height || 1000)
+const calcHeight = ref(statusData.value?.height ?? 1000)
 
 const totalReward = computed(() => {
   const h = Number(calcHeight.value)

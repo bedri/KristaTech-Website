@@ -45,6 +45,7 @@ const translations: Record<string, Record<string, string>> = {
     navFeatures: 'Features',
     navTokenomics: 'Tokenomics',
     navRoadmap: 'Roadmap',
+    navDocuments: 'Documents',
     activeMasternodes: 'Active Masternodes',
     currentSupply: 'Circulating Supply',
     networkTps: 'Network TPS'
@@ -93,6 +94,7 @@ const translations: Record<string, Record<string, string>> = {
     navFeatures: 'Özellikler',
     navTokenomics: 'Token Ekonomisi',
     navRoadmap: 'Yol Haritası',
+    navDocuments: 'Dokümanlar',
     activeMasternodes: 'Aktif Masternode Sayısı',
     currentSupply: 'Dolaşımdaki Arz',
     networkTps: 'Ağ TPS Değeri'

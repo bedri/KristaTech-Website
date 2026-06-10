@@ -82,6 +82,59 @@ onUnmounted(() => {
           >
             {{ t('navRoadmap') }}
           </button>
+
+          <!-- Documents Dropdown -->
+          <div class="relative group">
+            <button class="hover:text-mint-600 transition-colors cursor-pointer text-sm font-medium border-none bg-transparent flex items-center gap-1">
+              {{ t('navDocuments') }}
+              <UIcon name="i-heroicons-chevron-down" class="w-4 h-4 transition-transform group-hover:rotate-180" />
+            </button>
+            
+            <div class="absolute left-0 mt-2 w-56 rounded-xl bg-white border border-slate-200/60 shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-200 z-50 p-2">
+              <a 
+                href="https://github.com/bedri/KristaTech-KRISTA/blob/master/doc/ADAM_Consensus.md" 
+                target="_blank" 
+                class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
+              >
+                ADAM Consensus
+              </a>
+              <a 
+                href="https://github.com/bedri/KristaTech-KRISTA/blob/master/doc/PoBLS_Consensus.md" 
+                target="_blank" 
+                class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
+              >
+                PoBLS Consensus
+              </a>
+              <a 
+                href="https://github.com/bedri/KristaTech-KRISTA/blob/master/doc/MESCAL.md" 
+                target="_blank" 
+                class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
+              >
+                MESCAL Smart Contracts
+              </a>
+              <a 
+                href="https://github.com/bedri/KristaTech-KRISTA/blob/master/doc/Tokenomics_Study.md" 
+                target="_blank" 
+                class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
+              >
+                Tokenomics Study
+              </a>
+              <a 
+                href="https://github.com/bedri/KristaTech-KRISTA/blob/master/doc/Miner_Registration.md" 
+                target="_blank" 
+                class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
+              >
+                Miner Registration
+              </a>
+              <a 
+                href="https://github.com/bedri/KristaTech-KRISTA/blob/master/doc/Security_Audit.md" 
+                target="_blank" 
+                class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
+              >
+                Security Audit
+              </a>
+            </div>
+          </div>
         </nav>
 
         <!-- Right Side Controls -->
@@ -149,6 +202,60 @@ onUnmounted(() => {
         </div>
         <div class="flex items-center gap-6">
           <a href="http://localhost:27799" target="_blank" class="hover:text-mint-600 transition-colors">{{ t('explorer') }}</a>
+          
+          <!-- Documents Dropdown Footer -->
+          <div class="relative group">
+            <button class="hover:text-mint-600 transition-colors cursor-pointer text-sm font-medium border-none bg-transparent flex items-center gap-1">
+              {{ t('navDocuments') }}
+              <UIcon name="i-heroicons-chevron-up" class="w-4 h-4 transition-transform group-hover:rotate-180" />
+            </button>
+            
+            <div class="absolute bottom-full left-0 mb-2 w-56 rounded-xl bg-white border border-slate-200/60 shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-200 z-50 p-2">
+              <a 
+                href="https://github.com/bedri/KristaTech-KRISTA/blob/master/doc/ADAM_Consensus.md" 
+                target="_blank" 
+                class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
+              >
+                ADAM Consensus
+              </a>
+              <a 
+                href="https://github.com/bedri/KristaTech-KRISTA/blob/master/doc/PoBLS_Consensus.md" 
+                target="_blank" 
+                class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
+              >
+                PoBLS Consensus
+              </a>
+              <a 
+                href="https://github.com/bedri/KristaTech-KRISTA/blob/master/doc/MESCAL.md" 
+                target="_blank" 
+                class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
+              >
+                MESCAL Smart Contracts
+              </a>
+              <a 
+                href="https://github.com/bedri/KristaTech-KRISTA/blob/master/doc/Tokenomics_Study.md" 
+                target="_blank" 
+                class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
+              >
+                Tokenomics Study
+              </a>
+              <a 
+                href="https://github.com/bedri/KristaTech-KRISTA/blob/master/doc/Miner_Registration.md" 
+                target="_blank" 
+                class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
+              >
+                Miner Registration
+              </a>
+              <a 
+                href="https://github.com/bedri/KristaTech-KRISTA/blob/master/doc/Security_Audit.md" 
+                target="_blank" 
+                class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
+              >
+                Security Audit
+              </a>
+            </div>
+          </div>
+
           <a href="https://github.com/bedri/KristaTech-KRISTA" target="_blank" class="hover:text-mint-600 transition-colors">{{ t('github') }}</a>
           <span class="text-xs px-2 py-0.5 rounded bg-white border border-slate-200/80 text-slate-500 font-semibold shadow-sm">v1.2.0</span>
         </div>
