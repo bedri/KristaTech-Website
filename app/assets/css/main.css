@@ -2,68 +2,68 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
 
-
 @theme {
-  --color-salmon-50: #fef4f3;
-  --color-salmon-100: #fde8e5;
-  --color-salmon-200: #fbd2cd;
-  --color-salmon-300: #f9b1a7;
-  --color-salmon-400: #f78c7f;
-  --color-salmon-500: #f5897c;
-  --color-salmon-600: #d76052;
-  --color-salmon-700: #b44336;
-  --color-salmon-800: #943226;
-  --color-salmon-900: #7b281d;
-  --color-salmon-950: #46120c;
+  --color-mint-50: #f2fcf7;
+  --color-mint-100: #e1f9ee;
+  --color-mint-200: #c5f2db;
+  --color-mint-300: #97e7bf;
+  --color-mint-400: #62d39d;
+  --color-mint-500: #33b87d;
+  --color-mint-600: #259664;
+  --color-mint-700: #207752;
+  --color-mint-800: #1c5e42;
+  --color-mint-900: #184f38;
+  --color-mint-950: #0c2b1e;
 
-  --color-slate-blue-50: #f1f4fa;
-  --color-slate-blue-100: #e2eafd;
-  --color-slate-blue-200: #cbd8fa;
-  --color-slate-blue-300: #abbef6;
-  --color-slate-blue-400: #879ef0;
-  --color-slate-blue-500: #7695cd;
-  --color-slate-blue-600: #5a77b3;
-  --color-slate-blue-700: #465d91;
-  --color-slate-blue-800: #3b4d79;
-  --color-slate-blue-900: #334164;
-  --color-slate-blue-950: #1f273e;
+  --color-sky-blue-50: #f0f7fc;
+  --color-sky-blue-100: #e1f0fa;
+  --color-sky-blue-200: #bce1f4;
+  --color-sky-blue-300: #82c8eb;
+  --color-sky-blue-400: #4ea8de;
+  --color-sky-blue-500: #2a8fc7;
+  --color-sky-blue-600: #1d70a2;
+  --color-sky-blue-700: #195a82;
+  --color-sky-blue-800: #174c6e;
+  --color-sky-blue-900: #18415c;
+  --color-sky-blue-950: #0f283b;
 }
 
 body {
   font-family: 'Outfit', sans-serif;
-  background-color: #0b0f19;
-  color: #f3f4f6;
+  background-color: #f3f7f5;
+  color: #334155;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
   background-image: 
-    radial-gradient(at 10% 20%, rgba(245, 137, 124, 0.12) 0px, transparent 50%),
-    radial-gradient(at 90% 80%, rgba(118, 149, 205, 0.12) 0px, transparent 50%);
+    radial-gradient(at 10% 20%, rgba(51, 184, 125, 0.07) 0px, transparent 55%),
+    radial-gradient(at 90% 80%, rgba(78, 168, 222, 0.07) 0px, transparent 55%);
   background-attachment: fixed;
 }
 
-/* Glassmorphism utility card */
+/* Glassmorphism utility card - Light Mode */
 .glass-card {
-  background: rgba(15, 23, 42, 0.45);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(167, 201, 187, 0.25);
+  box-shadow: 0 10px 30px -10px rgba(167, 201, 187, 0.15);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-card:hover {
-  border-color: rgba(245, 137, 124, 0.25);
-  box-shadow: 0 12px 40px 0 rgba(245, 137, 124, 0.1);
+  border-color: rgba(51, 184, 125, 0.35);
+  box-shadow: 0 16px 40px -10px rgba(51, 184, 125, 0.15);
+  transform: translateY(-2px);
 }
 
-/* Neon glow text */
-.text-glow-salmon {
-  text-shadow: 0 0 10px rgba(245, 137, 124, 0.5);
+/* Soft glow text for relaxing look */
+.text-glow-mint {
+  text-shadow: 0 0 12px rgba(51, 184, 125, 0.25);
 }
 
-.text-glow-slate-blue {
-  text-shadow: 0 0 10px rgba(118, 149, 205, 0.5);
+.text-glow-sky-blue {
+  text-shadow: 0 0 12px rgba(78, 168, 222, 0.25);
 }
 
 /* Custom scrollbars */
@@ -73,19 +73,19 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #0b0f19;
+  background: #f3f7f5;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
+  background: #cbd5e1;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #f5897c;
+  background: #33b87d;
 }
 
-/* Glowing borders */
+/* Glowing borders - Mint Sky */
 .glow-border {
   position: relative;
 }
@@ -99,12 +99,12 @@ body {
   bottom: 0;
   border-radius: inherit;
   border: 1px solid transparent;
-  background: linear-gradient(to right, #f5897c, #7695cd) border-box;
+  background: linear-gradient(to right, #33b87d, #4ea8de) border-box;
   -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: destination-out;
   mask-composite: exclude;
   pointer-events: none;
-  opacity: 0.2;
+  opacity: 0.25;
   transition: opacity 0.3s ease;
 }
 
@@ -122,4 +122,3 @@ body {
 .fade-leave-to {
   opacity: 0;
 }
-

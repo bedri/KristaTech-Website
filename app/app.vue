@@ -40,46 +40,45 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col bg-[#0b0f19] text-gray-200 selection:bg-salmon-500/30 selection:text-salmon-200">
+  <div class="min-h-screen flex flex-col bg-[#f3f7f5] text-slate-700 selection:bg-mint-500/20 selection:text-mint-800">
     <!-- Main Glassmorphic Header -->
-    <header class="sticky top-0 z-50 bg-[#0b0f19]/80 backdrop-blur-md border-b border-white/5 py-4">
+    <header class="sticky top-0 z-50 bg-white/75 backdrop-blur-md border-b border-slate-200/40 py-4 shadow-sm">
       <UContainer class="flex items-center justify-between">
         <!-- Logo / Branding -->
-        <a href="#" class="flex items-center gap-4 group">
-          <div class="w-14 h-14 rounded-2xl border border-white/10 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-300 p-1.5 bg-gradient-to-b from-slate-900 to-[#0b0f19]">
+        <a href="#" class="flex items-center gap-3.5 group">
+          <div class="w-12 h-12 rounded-xl border border-slate-200/60 flex items-center justify-center shadow-sm group-hover:scale-102 transition-transform duration-300 p-2.5 bg-gradient-to-b from-white to-[#f3f7f5]">
             <img src="/logo.svg" alt="KristaTech Logo" class="w-full h-full object-contain" />
           </div>
           <div>
-            <h1 class="font-extrabold text-2xl tracking-wider text-white flex items-center gap-2">
+            <h1 class="font-extrabold text-xl tracking-wider text-slate-800 flex items-center gap-2">
               KRISTA
-              <span class="text-[11px] font-bold tracking-normal px-2.5 py-0.5 rounded bg-salmon-500/10 text-salmon-400 border border-salmon-500/20">
-                BLOCKCHAIN
+              <span class="text-[10px] font-bold tracking-normal px-2 py-0.5 rounded-md bg-mint-500/10 text-mint-600 border border-mint-500/20">
+                CORE
               </span>
             </h1>
           </div>
         </a>
 
-
         <!-- Desktop Navigation -->
-        <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-400">
+        <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-500">
           <button 
             @click="scrollToSection('features')" 
-            class="hover:text-white transition-colors cursor-pointer text-sm font-medium border-none bg-transparent"
-            :class="{ 'text-salmon-400 font-bold text-glow-salmon': activeSection === 'features' }"
+            class="hover:text-mint-600 transition-colors cursor-pointer text-sm font-medium border-none bg-transparent"
+            :class="{ 'text-mint-600 font-bold text-glow-mint': activeSection === 'features' }"
           >
             {{ t('navFeatures') }}
           </button>
           <button 
             @click="scrollToSection('tokenomics')" 
-            class="hover:text-white transition-colors cursor-pointer text-sm font-medium border-none bg-transparent"
-            :class="{ 'text-salmon-400 font-bold text-glow-salmon': activeSection === 'tokenomics' }"
+            class="hover:text-mint-600 transition-colors cursor-pointer text-sm font-medium border-none bg-transparent"
+            :class="{ 'text-mint-600 font-bold text-glow-mint': activeSection === 'tokenomics' }"
           >
             {{ t('navTokenomics') }}
           </button>
           <button 
             @click="scrollToSection('roadmap')" 
-            class="hover:text-white transition-colors cursor-pointer text-sm font-medium border-none bg-transparent"
-            :class="{ 'text-salmon-400 font-bold text-glow-salmon': activeSection === 'roadmap' }"
+            class="hover:text-mint-600 transition-colors cursor-pointer text-sm font-medium border-none bg-transparent"
+            :class="{ 'text-mint-600 font-bold text-glow-mint': activeSection === 'roadmap' }"
           >
             {{ t('navRoadmap') }}
           </button>
@@ -88,18 +87,18 @@ onUnmounted(() => {
         <!-- Right Side Controls -->
         <div class="flex items-center gap-3">
           <!-- Language Selector -->
-          <div class="flex bg-white/5 rounded-lg p-0.5 border border-white/10 text-xs">
+          <div class="flex bg-slate-200/50 rounded-lg p-0.5 border border-slate-300/40 text-xs">
             <button 
               @click="setLocale('tr')" 
-              class="px-2.5 py-1 rounded transition-colors cursor-pointer border-none bg-transparent font-medium"
-              :class="locale === 'tr' ? 'bg-salmon-500/20 text-salmon-400 font-bold border border-salmon-500/20' : 'text-gray-400 hover:text-white'"
+              class="px-2 py-0.5 rounded transition-colors cursor-pointer border-none bg-transparent font-semibold"
+              :class="locale === 'tr' ? 'bg-white text-mint-600 shadow-sm border border-slate-200/20' : 'text-slate-500 hover:text-slate-800'"
             >
               TR
             </button>
             <button 
               @click="setLocale('en')" 
-              class="px-2.5 py-1 rounded transition-colors cursor-pointer border-none bg-transparent font-medium"
-              :class="locale === 'en' ? 'bg-salmon-500/20 text-salmon-400 font-bold border border-salmon-500/20' : 'text-gray-400 hover:text-white'"
+              class="px-2 py-0.5 rounded transition-colors cursor-pointer border-none bg-transparent font-semibold"
+              :class="locale === 'en' ? 'bg-white text-mint-600 shadow-sm border border-slate-200/20' : 'text-slate-500 hover:text-slate-800'"
             >
               EN
             </button>
@@ -109,10 +108,10 @@ onUnmounted(() => {
           <UButton
             to="http://localhost:27799"
             target="_blank"
-            color="salmon"
+            color="mint"
             variant="solid"
             size="sm"
-            class="font-medium shadow-md shadow-salmon-500/10 hidden sm:inline-flex cursor-pointer"
+            class="font-semibold shadow-sm shadow-mint-500/5 hidden sm:inline-flex cursor-pointer text-white bg-mint-500 hover:bg-mint-600 border-none"
             icon="i-heroicons-globe-alt"
           >
             {{ t('explorer') }}
@@ -127,9 +126,8 @@ onUnmounted(() => {
             icon="i-simple-icons-github"
             label="GitHub"
             size="sm"
-            class="font-medium cursor-pointer"
+            class="font-semibold cursor-pointer text-slate-600 hover:text-slate-900"
           />
-
         </div>
       </UContainer>
     </header>
@@ -140,23 +138,22 @@ onUnmounted(() => {
     </main>
 
     <!-- Footer -->
-    <footer class="bg-slate-950/80 border-t border-white/5 py-10 mt-auto">
-      <UContainer class="flex flex-col md:flex-row items-center justify-between gap-6 text-sm text-gray-500">
+    <footer class="bg-slate-50 border-t border-slate-200/80 py-10 mt-auto">
+      <UContainer class="flex flex-col md:flex-row items-center justify-between gap-6 text-sm text-slate-500">
         <div class="flex items-center gap-3">
-          <img src="/logo.svg" alt="KristaTech Logo" class="w-8 h-8 opacity-80" />
+          <img src="/logo.svg" alt="KristaTech Logo" class="w-7 h-7 opacity-90" />
           <div>
-            <span class="font-bold text-gray-400 tracking-wider">KRISTA</span>
-
-            <span class="text-xs text-gray-600 block sm:inline sm:ml-2">{{ t('brandTagline') }}</span>
+            <span class="font-bold text-slate-700 tracking-wider">KRISTA</span>
+            <span class="text-xs text-slate-400 block sm:inline sm:ml-2">{{ t('brandTagline') }}</span>
           </div>
         </div>
         <div class="flex items-center gap-6">
-          <a href="http://localhost:27799" target="_blank" class="hover:text-salmon-400 transition-colors">{{ t('explorer') }}</a>
-          <a href="https://github.com/bedri/KristaTech-KRISTA" target="_blank" class="hover:text-salmon-400 transition-colors">{{ t('github') }}</a>
-          <span class="text-xs px-2 py-1 rounded bg-[#0b0f19] border border-white/5 text-gray-400">v1.1.0</span>
+          <a href="http://localhost:27799" target="_blank" class="hover:text-mint-600 transition-colors">{{ t('explorer') }}</a>
+          <a href="https://github.com/bedri/KristaTech-KRISTA" target="_blank" class="hover:text-mint-600 transition-colors">{{ t('github') }}</a>
+          <span class="text-xs px-2 py-0.5 rounded bg-white border border-slate-200/80 text-slate-500 font-semibold shadow-sm">v1.2.0</span>
         </div>
       </UContainer>
-      <UContainer class="mt-6 border-t border-white/5 pt-6 text-center text-xs text-gray-600">
+      <UContainer class="mt-6 border-t border-slate-200/50 pt-6 text-center text-xs text-slate-400">
         &copy; 2026 {{ t('footerRights') }}
       </UContainer>
     </footer>
