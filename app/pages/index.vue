@@ -281,14 +281,15 @@ const requiredCollateral = computed(() => {
           {{ t('getStarted') }}
         </UButton>
         <UButton
-          to="https://github.com/bedri/KristaTech-KRISTA"
+          to="https://github.com/bedri/KristaTech-KRISTA/releases"
           target="_blank"
           color="slate"
           size="lg"
           variant="outline"
           class="px-8 py-3 text-sm font-semibold cursor-pointer border-slate-300 text-slate-600 hover:bg-slate-50"
+          icon="i-heroicons-arrow-down-tray"
         >
-          {{ t('viewDocs') }}
+          {{ t('downloadWallet') }}
         </UButton>
       </div>
 
@@ -699,16 +700,16 @@ const requiredCollateral = computed(() => {
             <!-- Bullet point node -->
             <div 
               class="w-6 h-6 rounded-full border-4 border-[#f3f7f5] shadow-md z-10 shrink-0 md:order-2"
-              :class="currentBlock >= 1000 ? 'bg-mint-500 shadow-mint-500/40' : 'bg-sky-blue-500 shadow-sky-blue-500/20'"
+              :class="currentBlock >= 200 ? 'bg-mint-500 shadow-mint-500/40' : 'bg-sky-blue-500 shadow-sky-blue-500/20'"
             ></div>
 
             <div class="flex-1 glass-card rounded-2xl p-6 border border-slate-200/50 shadow-sm pr-8 text-left md:text-right md:order-1">
               <div class="mb-2">
                 <span 
                   class="text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border"
-                  :class="currentBlock >= 1000 ? 'text-mint-600 bg-mint-500/10 border-mint-500/20' : 'text-sky-blue-600 bg-sky-blue-500/10 border-sky-blue-500/20'"
+                  :class="currentBlock >= 200 ? 'text-mint-600 bg-mint-500/10 border-mint-500/20' : 'text-sky-blue-600 bg-sky-blue-500/10 border-sky-blue-500/20'"
                 >
-                  {{ currentBlock >= 1000 ? 'Active' : 'Next Phase' }}
+                  {{ currentBlock >= 200 ? 'Active' : 'Next Phase' }}
                 </span>
               </div>
               <h3 class="text-base font-bold text-slate-800">{{ t('phase2') }}</h3>
@@ -725,25 +726,25 @@ const requiredCollateral = computed(() => {
             <div class="flex-1 text-right hidden md:block pr-8">
               <span 
                 class="text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border"
-                :class="currentBlock >= 5000 ? 'text-mint-600 bg-mint-500/10 border-mint-500/20' : 'text-slate-400 bg-slate-100 border-slate-200'"
+                :class="currentBlock >= 1000 ? 'text-mint-600 bg-mint-500/10 border-mint-500/20' : (currentBlock >= 200 ? 'text-sky-blue-600 bg-sky-blue-500/10 border-sky-blue-500/20' : 'text-slate-400 bg-slate-100 border-slate-200')"
               >
-                {{ currentBlock >= 5000 ? 'Active' : 'Future' }}
+                {{ currentBlock >= 1000 ? 'Active' : (currentBlock >= 200 ? 'Next Phase' : 'Future') }}
               </span>
             </div>
 
             <!-- Bullet point node -->
             <div 
               class="w-6 h-6 rounded-full border-4 border-[#f3f7f5] shadow-md z-10 shrink-0"
-              :class="currentBlock >= 5000 ? 'bg-mint-500 shadow-mint-500/40' : 'bg-slate-300'"
+              :class="currentBlock >= 1000 ? 'bg-mint-500 shadow-mint-500/40' : (currentBlock >= 200 ? 'bg-sky-blue-500 shadow-sky-blue-500/20' : 'bg-slate-300')"
             ></div>
 
             <div class="flex-1 glass-card rounded-2xl p-6 border border-slate-200/50 shadow-sm pl-8 text-left">
               <div class="md:hidden mb-2">
                 <span 
                   class="text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border"
-                  :class="currentBlock >= 5000 ? 'text-mint-600 bg-mint-500/10 border-mint-500/20' : 'text-slate-400 bg-slate-100 border-slate-200'"
+                  :class="currentBlock >= 1000 ? 'text-mint-600 bg-mint-500/10 border-mint-500/20' : (currentBlock >= 200 ? 'text-sky-blue-600 bg-sky-blue-500/10 border-sky-blue-500/20' : 'text-slate-400 bg-slate-100 border-slate-200')"
                 >
-                  {{ currentBlock >= 5000 ? 'Active' : 'Future' }}
+                  {{ currentBlock >= 1000 ? 'Active' : (currentBlock >= 200 ? 'Next Phase' : 'Future') }}
                 </span>
               </div>
               <h3 class="text-base font-bold text-slate-800">{{ t('phase3') }}</h3>
@@ -751,6 +752,32 @@ const requiredCollateral = computed(() => {
                 {{ t('phase3Desc') }}
               </p>
             </div>
+          </div>
+
+          <!-- Phase 4 -->
+          <div class="relative flex flex-col md:flex-row items-center gap-8 group">
+            <!-- Bullet point node -->
+            <div 
+              class="w-6 h-6 rounded-full border-4 border-[#f3f7f5] shadow-md z-10 shrink-0 md:order-2"
+              :class="currentBlock >= 1200 ? 'bg-mint-500 shadow-mint-500/40' : (currentBlock >= 1000 ? 'bg-sky-blue-500 shadow-sky-blue-500/20' : 'bg-slate-300')"
+            ></div>
+
+            <div class="flex-1 glass-card rounded-2xl p-6 border border-slate-200/50 shadow-sm pr-8 text-left md:text-right md:order-1">
+              <div class="mb-2">
+                <span 
+                  class="text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border"
+                  :class="currentBlock >= 1200 ? 'text-mint-600 bg-mint-500/10 border-mint-500/20' : (currentBlock >= 1000 ? 'text-sky-blue-600 bg-sky-blue-500/10 border-sky-blue-500/20' : 'text-slate-400 bg-slate-100 border-slate-200')"
+                >
+                  {{ currentBlock >= 1200 ? 'Active' : (currentBlock >= 1000 ? 'Next Phase' : 'Future') }}
+                </span>
+              </div>
+              <h3 class="text-base font-bold text-slate-800">{{ t('phase4') }}</h3>
+              <p class="text-slate-500 text-xs sm:text-sm mt-2 leading-relaxed">
+                {{ t('phase4Desc') }}
+              </p>
+            </div>
+
+            <div class="flex-1 hidden md:block text-right"></div>
           </div>
 
         </div>

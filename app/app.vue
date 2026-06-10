@@ -172,6 +172,19 @@ onUnmounted(() => {
             {{ t('explorer') }}
           </UButton>
 
+          <!-- Wallet Download Link -->
+          <UButton
+            to="https://github.com/bedri/KristaTech-KRISTA/releases"
+            target="_blank"
+            color="slate"
+            variant="outline"
+            size="sm"
+            class="font-semibold shadow-sm border-slate-300 text-slate-600 hover:bg-slate-50 cursor-pointer hidden md:inline-flex"
+            icon="i-heroicons-arrow-down-tray"
+          >
+            {{ t('downloadWallet') }}
+          </UButton>
+
           <!-- GitHub Link -->
           <UButton
             to="https://github.com/bedri/KristaTech-KRISTA"
@@ -204,6 +217,7 @@ onUnmounted(() => {
         </div>
         <div class="flex items-center gap-6">
           <a href="http://localhost:27799" target="_blank" class="hover:text-mint-600 transition-colors">{{ t('explorer') }}</a>
+          <a href="https://github.com/bedri/KristaTech-KRISTA/releases" target="_blank" class="hover:text-mint-600 transition-colors">{{ t('downloadWallet') }}</a>
           
           <!-- Documents Dropdown Footer -->
           <div class="relative group">
