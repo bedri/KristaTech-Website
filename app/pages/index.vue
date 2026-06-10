@@ -1,11 +1,11 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from '~/composables/useI18n'
 
 const { t } = useI18n()
 
 // Fetch real-time status from our server API proxy
-const { data: statusData } = await useFetch('/api/status')
+const { data: statusData, refresh } = await useFetch('/api/status')
 
 // 1. Hero Countdown Milestones
 const currentBlock = ref(950)
@@ -25,9 +25,30 @@ function simulateBlock() {
   }
 }
 
+let timer = null
+
 onMounted(() => {
   if (statusData.value?.success && typeof statusData.value?.height === 'number') {
     currentBlock.value = statusData.value.height
+    calcHeight.value = statusData.value.height // Initialize calculator to current block height
+  }
+
+  // Poll every 5 seconds for live blockchain info
+  timer = setInterval(async () => {
+    try {
+      await refresh()
+      if (statusData.value?.success && typeof statusData.value?.height === 'number') {
+        currentBlock.value = statusData.value.height
+      }
+    } catch (e) {
+      console.error('Error refreshing block status:', e)
+    }
+  }, 5000)
+})
+
+onUnmounted(() => {
+  if (timer) {
+    clearInterval(timer)
   }
 })
 
