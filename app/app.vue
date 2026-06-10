@@ -161,7 +161,7 @@ onUnmounted(() => {
 
           <!-- Explorer Link -->
           <UButton
-            to="http://localhost:27799"
+            to="https://explorer.kristalteknoloji.com"
             target="_blank"
             color="mint"
             variant="solid"
@@ -216,7 +216,7 @@ onUnmounted(() => {
           </div>
         </div>
         <div class="flex items-center gap-6">
-          <a href="http://localhost:27799" target="_blank" class="hover:text-mint-600 transition-colors">{{ t('explorer') }}</a>
+          <a href="https://explorer.kristalteknoloji.com" target="_blank" class="hover:text-mint-600 transition-colors">{{ t('explorer') }}</a>
           <a href="https://github.com/bedri/KristaTech-KRISTA/releases" target="_blank" class="hover:text-mint-600 transition-colors">{{ t('downloadWallet') }}</a>
           
           <!-- Documents Dropdown Footer -->
