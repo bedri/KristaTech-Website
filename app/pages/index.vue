@@ -5,10 +5,12 @@ import { useI18n } from '~/composables/useI18n'
 const { t } = useI18n()
 
 // Fetch real-time status from our server API proxy
-const { data: statusData, refresh } = await useFetch('/api/status')
+const { data: statusData, refresh } = await useFetch('/api/status', {
+  key: 'blockchain-status'
+})
 
 // 1. Hero Countdown Milestones
-const currentBlock = ref(950)
+const currentBlock = ref(statusData.value?.height || 950)
 const masternodesCount = computed(() => {
   return statusData.value?.masternodes?.enabled || 128
 })
@@ -28,11 +30,6 @@ function simulateBlock() {
 let timer = null
 
 onMounted(() => {
-  if (statusData.value?.success && typeof statusData.value?.height === 'number') {
-    currentBlock.value = statusData.value.height
-    calcHeight.value = statusData.value.height // Initialize calculator to current block height
-  }
-
   // Poll every 5 seconds for live blockchain info
   timer = setInterval(async () => {
     try {
@@ -143,7 +140,7 @@ OP_END_CONTRACT`
 })
 
 // 5. Interactive Tokenomics Calculator
-const calcHeight = ref(1000)
+const calcHeight = ref(statusData.value?.height || 1000)
 
 const totalReward = computed(() => {
   const h = Number(calcHeight.value)

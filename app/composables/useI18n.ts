@@ -99,32 +99,37 @@ const translations: Record<string, Record<string, string>> = {
   }
 }
 
-const currentLocale = ref('tr') // default to Turkish since the user is Turkish-speaking
-
-if (process.client) {
-  const savedLocale = localStorage.getItem('kristatech_locale')
-  if (savedLocale && ['en', 'tr'].includes(savedLocale)) {
-    currentLocale.value = savedLocale
-  } else {
-    const browserLang = navigator.language.slice(0, 2)
-    if (['en', 'tr'].includes(browserLang)) {
-      currentLocale.value = browserLang
-    }
-  }
-}
-
 export function useI18n() {
+  const currentLocale = useCookie('kristatech_locale', {
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+    default: () => {
+      if (process.server) {
+        const headers = useRequestHeaders(['accept-language'])
+        const acceptLanguage = headers['accept-language']
+        if (acceptLanguage) {
+          const preferred = acceptLanguage.split(',')[0].slice(0, 2)
+          if (['en', 'tr'].includes(preferred)) {
+            return preferred
+          }
+        }
+      } else if (process.client) {
+        const browserLang = navigator.language.slice(0, 2)
+        if (['en', 'tr'].includes(browserLang)) {
+          return browserLang
+        }
+      }
+      return 'tr'
+    }
+  })
+
   const setLocale = (locale: string) => {
     if (['en', 'tr'].includes(locale)) {
       currentLocale.value = locale
-      if (process.client) {
-        localStorage.setItem('kristatech_locale', locale)
-      }
     }
   }
 
   const t = (key: string): string => {
-    const dict = translations[currentLocale.value] || translations.en
+    const dict = translations[currentLocale.value || 'tr'] || translations.en
     return dict[key] || key
   }
 
