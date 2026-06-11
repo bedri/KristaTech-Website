@@ -83,6 +83,15 @@ onUnmounted(() => {
             {{ t('navRoadmap') }}
           </button>
 
+          <!-- Whitepaper Link -->
+          <a 
+            :href="locale === 'tr' ? 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Whitepaper_TR.md' : 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Whitepaper.md'" 
+            target="_blank" 
+            class="hover:text-mint-600 transition-colors cursor-pointer text-sm font-medium text-slate-500 no-underline"
+          >
+            {{ t('navWhitepaper') }}
+          </a>
+
           <!-- Documents Dropdown -->
           <div class="relative group">
             <button class="hover:text-mint-600 transition-colors cursor-pointer text-sm font-medium border-none bg-transparent flex items-center gap-1">
@@ -93,46 +102,60 @@ onUnmounted(() => {
             <div class="absolute left-0 top-full pt-2 w-56 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-200 z-50">
               <div class="rounded-xl bg-white border border-slate-200/60 shadow-lg p-2">
                 <a 
-                  href="https://github.com/bedri/KristaTech-KRISTA/blob/master/doc/ADAM_Consensus.md" 
+                  href="https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/ADAM_Consensus.md" 
                   target="_blank" 
                   class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
                 >
-                  ADAM Consensus
+                  {{ locale === 'tr' ? 'ADAM Konsensüsü' : 'ADAM Consensus' }}
                 </a>
                 <a 
-                  href="https://github.com/bedri/KristaTech-KRISTA/blob/master/doc/PoBLS_Consensus.md" 
+                  :href="locale === 'tr' ? 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/PoBLS_Consensus_TR.md' : 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/PoBLS_Consensus.md'" 
                   target="_blank" 
                   class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
                 >
-                  PoBLS Consensus
+                  {{ locale === 'tr' ? 'PoBLS Konsensüsü' : 'PoBLS Consensus' }}
                 </a>
                 <a 
-                  href="https://github.com/bedri/KristaTech-KRISTA/blob/master/doc/MESCAL.md" 
+                  href="https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/MESCAL.md" 
                   target="_blank" 
                   class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
                 >
-                  MESCAL Smart Contracts
+                  {{ locale === 'tr' ? 'MESCAL Akıllı Sözleşmeleri' : 'MESCAL Smart Contracts' }}
                 </a>
                 <a 
-                  href="https://github.com/bedri/KristaTech-KRISTA/blob/master/doc/Tokenomics_Study.md" 
+                  :href="locale === 'tr' ? 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Tokenomics_Study_TR.md' : 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Tokenomics_Study.md'" 
                   target="_blank" 
                   class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
                 >
-                  Tokenomics Study
+                  {{ locale === 'tr' ? 'Token Ekonomisi Çalışması' : 'Tokenomics Study' }}
                 </a>
                 <a 
-                  href="https://github.com/bedri/KristaTech-KRISTA/blob/master/doc/Miner_Registration.md" 
+                  :href="locale === 'tr' ? 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Hardcap_Analysis_TR.md' : 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Hardcap_Analysis.md'" 
                   target="_blank" 
                   class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
                 >
-                  Miner Registration
+                  {{ locale === 'tr' ? 'Hardcap Analizi' : 'Hardcap Analysis' }}
                 </a>
                 <a 
-                  href="https://github.com/bedri/KristaTech-KRISTA/blob/master/doc/Security_Audit.md" 
+                  href="https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Miner_Registration.md" 
                   target="_blank" 
                   class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
                 >
-                  Security Audit
+                  {{ locale === 'tr' ? 'Madenci Kaydı' : 'Miner Registration' }}
+                </a>
+                <a 
+                  href="https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Security_Audit.md" 
+                  target="_blank" 
+                  class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
+                >
+                  {{ locale === 'tr' ? 'Güvenlik Denetimi' : 'Security Audit' }}
+                </a>
+                <a 
+                  href="https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/release-notes.md" 
+                  target="_blank" 
+                  class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
+                >
+                  {{ locale === 'tr' ? 'Sürüm Notları' : 'Release Notes' }}
                 </a>
               </div>
             </div>
@@ -218,6 +241,13 @@ onUnmounted(() => {
         <div class="flex items-center gap-6">
           <a href="https://explorer.kristalteknoloji.com" target="_blank" class="hover:text-mint-600 transition-colors">{{ t('explorer') }}</a>
           <a href="https://github.com/bedri/KristaTech-KRISTA/releases" target="_blank" class="hover:text-mint-600 transition-colors">{{ t('downloadWallet') }}</a>
+          <a 
+            :href="locale === 'tr' ? 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Whitepaper_TR.md' : 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Whitepaper.md'" 
+            target="_blank" 
+            class="hover:text-mint-600 transition-colors"
+          >
+            {{ t('navWhitepaper') }}
+          </a>
           
           <!-- Documents Dropdown Footer -->
           <div class="relative group">
@@ -229,46 +259,60 @@ onUnmounted(() => {
             <div class="absolute bottom-full left-0 pb-2 w-56 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-200 z-50">
               <div class="rounded-xl bg-white border border-slate-200/60 shadow-lg p-2">
                 <a 
-                  href="https://github.com/bedri/KristaTech-KRISTA/blob/master/doc/ADAM_Consensus.md" 
+                  href="https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/ADAM_Consensus.md" 
                   target="_blank" 
                   class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
                 >
-                  ADAM Consensus
+                  {{ locale === 'tr' ? 'ADAM Konsensüsü' : 'ADAM Consensus' }}
                 </a>
                 <a 
-                  href="https://github.com/bedri/KristaTech-KRISTA/blob/master/doc/PoBLS_Consensus.md" 
+                  :href="locale === 'tr' ? 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/PoBLS_Consensus_TR.md' : 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/PoBLS_Consensus.md'" 
                   target="_blank" 
                   class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
                 >
-                  PoBLS Consensus
+                  {{ locale === 'tr' ? 'PoBLS Konsensüsü' : 'PoBLS Consensus' }}
                 </a>
                 <a 
-                  href="https://github.com/bedri/KristaTech-KRISTA/blob/master/doc/MESCAL.md" 
+                  href="https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/MESCAL.md" 
                   target="_blank" 
                   class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
                 >
-                  MESCAL Smart Contracts
+                  {{ locale === 'tr' ? 'MESCAL Akıllı Sözleşmeleri' : 'MESCAL Smart Contracts' }}
                 </a>
                 <a 
-                  href="https://github.com/bedri/KristaTech-KRISTA/blob/master/doc/Tokenomics_Study.md" 
+                  :href="locale === 'tr' ? 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Tokenomics_Study_TR.md' : 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Tokenomics_Study.md'" 
                   target="_blank" 
                   class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
                 >
-                  Tokenomics Study
+                  {{ locale === 'tr' ? 'Token Ekonomisi Çalışması' : 'Tokenomics Study' }}
                 </a>
                 <a 
-                  href="https://github.com/bedri/KristaTech-KRISTA/blob/master/doc/Miner_Registration.md" 
+                  :href="locale === 'tr' ? 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Hardcap_Analysis_TR.md' : 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Hardcap_Analysis.md'" 
                   target="_blank" 
                   class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
                 >
-                  Miner Registration
+                  {{ locale === 'tr' ? 'Hardcap Analizi' : 'Hardcap Analysis' }}
                 </a>
                 <a 
-                  href="https://github.com/bedri/KristaTech-KRISTA/blob/master/doc/Security_Audit.md" 
+                  href="https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Miner_Registration.md" 
                   target="_blank" 
                   class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
                 >
-                  Security Audit
+                  {{ locale === 'tr' ? 'Madenci Kaydı' : 'Miner Registration' }}
+                </a>
+                <a 
+                  href="https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Security_Audit.md" 
+                  target="_blank" 
+                  class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
+                >
+                  {{ locale === 'tr' ? 'Güvenlik Denetimi' : 'Security Audit' }}
+                </a>
+                <a 
+                  href="https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/release-notes.md" 
+                  target="_blank" 
+                  class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
+                >
+                  {{ locale === 'tr' ? 'Sürüm Notları' : 'Release Notes' }}
                 </a>
               </div>
             </div>
