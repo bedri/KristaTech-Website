@@ -11,8 +11,10 @@ useHead({
 // Active section for highlighting nav items
 const activeSection = ref('')
 const sections = ['features', 'tokenomics', 'roadmap']
+const isMobileMenuOpen = ref(false)
 
 function scrollToSection(id) {
+  isMobileMenuOpen.value = false
   const element = document.getElementById(id)
   if (element) {
     element.scrollIntoView({ behavior: 'smooth' })
@@ -46,17 +48,18 @@ onUnmounted(() => {
 <template>
   <div class="min-h-screen flex flex-col bg-[#f3f7f5] text-slate-700 selection:bg-mint-500/20 selection:text-mint-800">
     <!-- Main Glassmorphic Header -->
-    <header class="sticky top-0 z-50 bg-white/75 backdrop-blur-md border-b border-slate-200/40 py-4 shadow-sm">
-      <UContainer class="flex items-center justify-between">
+    <header class="sticky top-0 z-50 bg-white/75 backdrop-blur-md border-b border-slate-200/40 py-3 sm:py-4 shadow-sm">
+      <UContainer class="flex items-center justify-between gap-4 sm:gap-6">
         <!-- Logo / Branding -->
-        <a href="#" class="flex items-center gap-3.5 group">
-          <div class="w-12 h-12 rounded-xl border border-slate-200/60 flex items-center justify-center shadow-sm group-hover:scale-102 transition-transform duration-300 p-2.5 bg-gradient-to-b from-white to-[#f3f7f5]">
+        <a href="#" class="flex items-center gap-2 sm:gap-3.5 group">
+          <div class="w-9 h-9 sm:w-12 h-12 rounded-xl border border-slate-200/60 flex items-center justify-center shadow-sm group-hover:scale-102 transition-transform duration-300 p-1.5 sm:p-2.5 bg-gradient-to-b from-white to-[#f3f7f5]">
             <img src="/logo.svg" alt="KristaTech Logo" class="w-full h-full object-contain" />
           </div>
           <div>
-            <h1 class="font-extrabold text-xl tracking-wider text-slate-800 flex items-center gap-2">
-              KristaTech (KRISTA)
-              <span class="text-[10px] font-bold tracking-normal px-2 py-0.5 rounded-md bg-mint-500/10 text-mint-600 border border-mint-500/20">
+            <h1 class="font-extrabold text-base sm:text-lg md:text-xl tracking-wider text-slate-800 flex items-center gap-1.5 sm:gap-2">
+              <span>KristaTech</span>
+              <span class="hidden sm:inline text-slate-500 font-medium text-xs sm:text-sm md:text-base">(KRISTA)</span>
+              <span class="text-[9px] sm:text-[10px] font-bold tracking-normal px-1.5 sm:px-2 py-0.5 rounded-md bg-mint-500/10 text-mint-600 border border-mint-500/20">
                 CORE
               </span>
             </h1>
@@ -64,7 +67,7 @@ onUnmounted(() => {
         </a>
 
         <!-- Desktop Navigation -->
-        <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-500">
+        <nav class="hidden lg:flex items-center gap-6 xl:gap-8 text-sm font-medium text-slate-500">
           <button 
             @click="scrollToSection('features')" 
             class="hover:text-mint-600 transition-colors cursor-pointer text-sm font-medium border-none bg-transparent"
@@ -167,7 +170,7 @@ onUnmounted(() => {
         </nav>
 
         <!-- Right Side Controls -->
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 sm:gap-3">
           <!-- Language Selector -->
           <div class="flex bg-slate-200/50 rounded-lg p-0.5 border border-slate-300/40 text-xs">
             <button 
@@ -206,7 +209,7 @@ onUnmounted(() => {
             color="slate"
             variant="outline"
             size="sm"
-            class="font-semibold shadow-sm border-slate-300 text-slate-600 hover:bg-slate-50 cursor-pointer hidden md:inline-flex"
+            class="font-semibold shadow-sm border-slate-300 text-slate-600 hover:bg-slate-50 cursor-pointer hidden xl:inline-flex"
             icon="i-heroicons-arrow-down-tray"
           >
             {{ t('downloadWallet') }}
@@ -221,11 +224,193 @@ onUnmounted(() => {
             icon="i-simple-icons-github"
             label="GitHub"
             size="sm"
-            class="font-semibold cursor-pointer text-slate-600 hover:text-slate-900"
+            class="font-semibold cursor-pointer text-slate-600 hover:text-slate-900 hidden md:inline-flex"
+          />
+          <UButton
+            to="https://github.com/bedri/KristaTech-KRISTA"
+            target="_blank"
+            color="neutral"
+            variant="ghost"
+            icon="i-simple-icons-github"
+            size="sm"
+            class="font-semibold cursor-pointer text-slate-600 hover:text-slate-900 md:hidden"
+          />
+
+          <!-- Mobile Menu Toggle Button -->
+          <UButton
+            color="neutral"
+            variant="ghost"
+            icon="i-heroicons-bars-3"
+            size="sm"
+            class="lg:hidden text-slate-600 hover:text-slate-900 hover:bg-slate-100/60"
+            @click="isMobileMenuOpen = true"
           />
         </div>
       </UContainer>
     </header>
+
+    <!-- Mobile Slideover Navigation Menu -->
+    <Transition
+      enter-active-class="transition-opacity duration-300 ease-out"
+      leave-active-class="transition-opacity duration-200 ease-in"
+      enter-from-class="opacity-0"
+      leave-to-class="opacity-0"
+    >
+      <div 
+        v-if="isMobileMenuOpen" 
+        class="fixed inset-0 z-100 bg-slate-900/40 backdrop-blur-sm"
+        @click="isMobileMenuOpen = false"
+      ></div>
+    </Transition>
+
+    <Transition
+      enter-active-class="transition-transform duration-300 ease-out"
+      leave-active-class="transition-transform duration-200 ease-in"
+      enter-from-class="translate-x-full"
+      leave-to-class="translate-x-full"
+    >
+      <div 
+        v-if="isMobileMenuOpen" 
+        class="fixed inset-y-0 right-0 z-101 w-full max-w-xs sm:max-w-sm bg-white shadow-2xl flex flex-col p-6 border-l border-slate-200/50"
+      >
+        <!-- Mobile Menu Header -->
+        <div class="flex items-center justify-between pb-6 border-b border-slate-100">
+          <div class="flex items-center gap-2">
+            <img src="/logo.svg" alt="KristaTech Logo" class="w-8 h-8" />
+            <span class="font-extrabold text-slate-800 text-base">KristaTech</span>
+            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-mint-500/10 text-mint-600 border border-mint-500/20">CORE</span>
+          </div>
+          <UButton
+            color="neutral"
+            variant="ghost"
+            icon="i-heroicons-x-mark"
+            size="sm"
+            class="text-slate-500 hover:text-slate-800"
+            @click="isMobileMenuOpen = false"
+          />
+        </div>
+
+        <!-- Mobile Menu Links -->
+        <div class="flex-grow overflow-y-auto py-6 flex flex-col gap-5">
+          <button 
+            @click="scrollToSection('features')" 
+            class="w-full text-left py-2 px-3 rounded-lg text-slate-600 hover:bg-slate-50 font-semibold text-sm transition-colors"
+          >
+            {{ t('navFeatures') }}
+          </button>
+          <button 
+            @click="scrollToSection('tokenomics')" 
+            class="w-full text-left py-2 px-3 rounded-lg text-slate-600 hover:bg-slate-50 font-semibold text-sm transition-colors"
+          >
+            {{ t('navTokenomics') }}
+          </button>
+          <button 
+            @click="scrollToSection('roadmap')" 
+            class="w-full text-left py-2 px-3 rounded-lg text-slate-600 hover:bg-slate-50 font-semibold text-sm transition-colors"
+          >
+            {{ t('navRoadmap') }}
+          </button>
+          
+          <a 
+            :href="locale === 'tr' ? 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Whitepaper_TR.md' : 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Whitepaper.md'" 
+            target="_blank" 
+            class="block py-2 px-3 rounded-lg text-slate-600 hover:bg-slate-50 font-semibold text-sm no-underline transition-colors"
+          >
+            {{ t('navWhitepaper') }}
+          </a>
+
+          <!-- Mobile Documents Sub-List -->
+          <div class="px-3">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-2">{{ t('navDocuments') }}</span>
+            <div class="flex flex-col gap-1 border-l border-slate-100 pl-3">
+              <a 
+                href="https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/ADAM_Consensus.md" 
+                target="_blank" 
+                class="block py-1.5 text-xs font-semibold text-slate-500 hover:text-mint-600 transition-colors"
+              >
+                {{ locale === 'tr' ? 'ADAM Konsensüsü' : 'ADAM Consensus' }}
+              </a>
+              <a 
+                :href="locale === 'tr' ? 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/PoBLS_Consensus_TR.md' : 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/PoBLS_Consensus.md'" 
+                target="_blank" 
+                class="block py-1.5 text-xs font-semibold text-slate-500 hover:text-mint-600 transition-colors"
+              >
+                {{ locale === 'tr' ? 'PoBLS Konsensüsü' : 'PoBLS Consensus' }}
+              </a>
+              <a 
+                href="https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/MESCAL.md" 
+                target="_blank" 
+                class="block py-1.5 text-xs font-semibold text-slate-500 hover:text-mint-600 transition-colors"
+              >
+                {{ locale === 'tr' ? 'MESCAL Akıllı Sözleşmeleri' : 'MESCAL Smart Contracts' }}
+              </a>
+              <a 
+                :href="locale === 'tr' ? 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Tokenomics_Study_TR.md' : 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Tokenomics_Study.md'" 
+                target="_blank" 
+                class="block py-1.5 text-xs font-semibold text-slate-500 hover:text-mint-600 transition-colors"
+              >
+                {{ locale === 'tr' ? 'Token Ekonomisi Çalışması' : 'Tokenomics Study' }}
+              </a>
+              <a 
+                :href="locale === 'tr' ? 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Hardcap_Analysis_TR.md' : 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Hardcap_Analysis.md'" 
+                target="_blank" 
+                class="block py-1.5 text-xs font-semibold text-slate-500 hover:text-mint-600 transition-colors"
+              >
+                {{ locale === 'tr' ? 'Hardcap Analizi' : 'Hardcap Analysis' }}
+              </a>
+              <a 
+                href="https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Miner_Registration.md" 
+                target="_blank" 
+                class="block py-1.5 text-xs font-semibold text-slate-500 hover:text-mint-600 transition-colors"
+              >
+                {{ locale === 'tr' ? 'Madenci Kaydı' : 'Miner Registration' }}
+              </a>
+              <a 
+                href="https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Security_Audit.md" 
+                target="_blank" 
+                class="block py-1.5 text-xs font-semibold text-slate-500 hover:text-mint-600 transition-colors"
+              >
+                {{ locale === 'tr' ? 'Güvenlik Denetimi' : 'Security Audit' }}
+              </a>
+              <a 
+                href="https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/release-notes.md" 
+                target="_blank" 
+                class="block py-1.5 text-xs font-semibold text-slate-500 hover:text-mint-600 transition-colors"
+              >
+                {{ locale === 'tr' ? 'Sürüm Notları' : 'Release Notes' }}
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile Menu Footer -->
+        <div class="pt-6 border-t border-slate-100 flex flex-col gap-4">
+          <UButton
+            to="https://explorer.kristalteknoloji.com"
+            target="_blank"
+            color="mint"
+            variant="solid"
+            size="sm"
+            class="w-full justify-center font-semibold text-white bg-mint-500 hover:bg-mint-600 border-none cursor-pointer"
+            icon="i-heroicons-globe-alt"
+          >
+            {{ t('explorer') }}
+          </UButton>
+
+          <UButton
+            to="https://github.com/bedri/KristaTech-KRISTA/releases"
+            target="_blank"
+            color="slate"
+            variant="outline"
+            size="sm"
+            class="w-full justify-center font-semibold border-slate-300 text-slate-600 hover:bg-slate-50 cursor-pointer"
+            icon="i-heroicons-arrow-down-tray"
+          >
+            {{ t('downloadWallet') }}
+          </UButton>
+        </div>
+      </div>
+    </Transition>
 
     <!-- Main Content -->
     <main class="flex-grow">

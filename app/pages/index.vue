@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from '~/composables/useI18n'
 
-const { t } = useI18n()
+const { locale, t } = useI18n()
 
 // Fetch real-time status from our server API proxy
 const { data: statusData, refresh } = await useFetch('/api/status', {
@@ -10,27 +10,21 @@ const { data: statusData, refresh } = await useFetch('/api/status', {
 })
 
 // 1. Hero Countdown Milestones
-const currentBlock = ref(statusData.value?.height ?? 950)
+const currentBlock = ref(statusData.value?.height ?? 199)
 const masternodesCount = computed(() => {
   return statusData.value?.masternodes?.enabled ?? 0
 })
 const circulatingSupply = computed(() => {
-  return statusData.value?.totalSupply ?? 5085400
+  return statusData.value?.totalSupply ?? 19800
 })
 
-const blocksRemaining = computed(() => Math.max(0, 1000 - currentBlock.value))
-const progressPercentage = computed(() => Math.min(100, (currentBlock.value / 1000) * 100))
+const blocksRemaining = computed(() => Math.max(0, 200 - currentBlock.value))
+const progressPercentage = computed(() => Math.min(100, (currentBlock.value / 200) * 100))
 
 function scrollToSection(id) {
   const element = document.getElementById(id)
   if (element) {
     element.scrollIntoView({ behavior: 'smooth' })
-  }
-}
-
-function simulateBlock() {
-  if (currentBlock.value < 1000) {
-    currentBlock.value++
   }
 }
 
@@ -147,67 +141,58 @@ OP_END_CONTRACT`
 })
 
 // 5. Interactive Tokenomics Calculator
-const calcHeight = ref(statusData.value?.height ?? 1000)
+const calcHeight = ref(statusData.value?.height ?? 2200)
 
 const totalReward = computed(() => {
   const h = Number(calcHeight.value)
-  if (h <= 1) return 5000000 // Premine block
-  if (h < 1000) return 100     // PoW Bootstrap blocks
-  
-  // Year decay model: every 1,051,200 blocks reward decreases by 20%
-  const year = Math.floor((h - 2) / 1051200)
-  const reward = 14.5 * Math.pow(0.8, year)
-  return Math.max(0, parseFloat(reward.toFixed(4)))
+  if (h <= 1) return 0 // Premine block (0 KRISTA)
+  if (h < 10000) return 100 // Bootstrap phase
+
+  // 1.9% decay every 90 days (259,200 blocks) starting at block 10,000
+  const period = Math.floor((h - 10000) / 259200)
+  const subsidy = 15.0 * Math.pow(0.981, period)
+  // Round to nearest satoshi (8 decimal places)
+  return Math.max(0, parseFloat((Math.floor(subsidy * 1e8 + 0.5) / 1e8).toFixed(8)))
 })
 
 const splitPercentages = computed(() => {
   const h = Number(calcHeight.value)
   
-  const devPercent = h > 1 ? 7.0 : 0.0
-  const faucetPercent = (h > 1 && h <= 50000) ? 0.7 : 0.0
-  const remaining = 100.0 - devPercent - faucetPercent
-  
-  if (h < 1000) {
+  if (h <= 1) {
     return {
-      dev: devPercent,
-      faucet: faucetPercent,
+      dev: 0.0,
+      faucet: 0.0,
       mn: 0.0,
       quorum: 0.0,
       participants: 0.0,
-      producer: remaining
+      producer: 0.0
     }
   }
-  
-  if (h >= 1200) {
-    // Model D active
+
+  const devPercent = 7.0
+  const faucetPercent = h <= 50000 ? 0.7 : 0.0
+  const remaining = 100.0 - devPercent - faucetPercent
+
+  // Model D activates at block 2200 on Mainnet
+  if (h >= 2200) {
     return {
       dev: devPercent,
       faucet: faucetPercent,
-      mn: 50.0,
-      quorum: 10.0,
-      participants: 25.0,
-      producer: remaining - 50.0 - 10.0 - 25.0
+      mn: parseFloat((remaining * 0.50).toFixed(4)),
+      quorum: parseFloat((remaining * 0.10).toFixed(4)),
+      participants: parseFloat((remaining * 0.25).toFixed(4)),
+      producer: parseFloat((remaining * 0.15).toFixed(4))
     }
-  } else if (h > 5000) {
-    // Legacy MN phase (non-Model D)
-    return {
-      dev: devPercent,
-      faucet: faucetPercent,
-      mn: 80.0,
-      quorum: 0.0,
-      participants: 0.0,
-      producer: remaining - 80.0
-    }
-  } else {
-    // Bootstrap phase (<= 5000)
-    return {
-      dev: devPercent,
-      faucet: faucetPercent,
-      mn: 0.0,
-      quorum: 0.0,
-      participants: 0.0,
-      producer: remaining
-    }
+  }
+
+  // Before block 2200 (since h < 2200 is <= 5000), Masternode payee receives 0%
+  return {
+    dev: devPercent,
+    faucet: faucetPercent,
+    mn: 0.0,
+    quorum: 0.0,
+    participants: 0.0,
+    producer: remaining
   }
 })
 
@@ -219,7 +204,7 @@ const participantsRewardAmount = computed(() => parseFloat((totalReward.value * 
 const producerRewardAmount = computed(() => parseFloat((totalReward.value * (splitPercentages.value.producer / 100)).toFixed(4)))
 
 const requiredCollateral = computed(() => {
-  return 20000
+  return 2100
 })
 </script>
 
@@ -231,30 +216,31 @@ const requiredCollateral = computed(() => {
       <div class="absolute w-96 h-96 rounded-full bg-mint-500/5 blur-[120px] top-[-50px] left-[20%] pointer-events-none"></div>
       <div class="absolute w-96 h-96 rounded-full bg-sky-blue-500/5 blur-[120px] bottom-0 right-[20%] pointer-events-none"></div>
 
-      <!-- Mainnet 1000 Milestone Banner -->
+      <!-- Mainnet 200 Milestone Banner -->
       <div 
-        class="mb-8 p-0.5 rounded-2xl bg-gradient-to-r from-mint-500/20 via-sky-blue-500/20 to-mint-500/20 border border-slate-200/50 backdrop-blur-md inline-block max-w-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-        @click="simulateBlock"
+        class="mb-8 p-0.5 rounded-2xl bg-gradient-to-r from-mint-500/20 via-sky-blue-500/20 to-mint-500/20 border border-slate-200/50 backdrop-blur-md inline-block max-w-lg shadow-sm hover:shadow-md transition-shadow"
       >
         <div class="bg-white px-5 py-2.5 rounded-[14px] flex flex-col gap-1.5 items-center">
           <div class="flex items-center gap-2 text-xs font-bold tracking-wider text-slate-700">
-            <span class="w-2 h-2 rounded-full bg-mint-500 animate-ping"></span>
-            <span v-if="currentBlock < 1000">HYBRID upgrade: block {{ currentBlock }}</span>
-            <span v-else class="text-mint-600">Upgrade active: block 1000 activated!</span>
+            <span class="w-2 h-2 rounded-full bg-mint-500" :class="{ 'animate-ping': currentBlock < 200 }"></span>
+            <span v-if="currentBlock < 200">HYBRID upgrade: block {{ currentBlock }}</span>
+            <span v-else class="text-mint-600">Hybrid Consensus active: block 200 activated!</span>
           </div>
           
-          <div v-if="currentBlock < 1000" class="w-64 h-1.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200/30 mt-0.5">
+          <div v-if="currentBlock < 200" class="w-64 h-1.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200/30 mt-0.5">
             <div 
               class="h-full bg-gradient-to-r from-mint-500 to-sky-blue-500 transition-all duration-500" 
               :style="{ width: `${progressPercentage}%` }"
             ></div>
           </div>
           
-          <span v-if="currentBlock < 1000" class="text-[10px] text-slate-400">
-            {{ blocksRemaining }} blocks remaining until block 1000. Click to simulate block ticks!
+          <span v-if="currentBlock < 200" class="text-[10px] text-slate-400">
+            <span v-if="locale === 'tr'">Ağ güncellemesine {{ blocksRemaining }} blok kaldı.</span>
+            <span v-else>{{ blocksRemaining }} blocks remaining until block 200.</span>
           </span>
           <span v-else class="text-[10px] text-mint-500 font-bold">
-            Consensus upgraded. MPA and PoBLS active!
+            <span v-if="locale === 'tr'">Konsensüs yükseltildi: PoS ve ADAM aktif!</span>
+            <span v-else>Consensus upgraded. PoS and ADAM active!</span>
           </span>
         </div>
       </div>
@@ -301,7 +287,7 @@ const requiredCollateral = computed(() => {
           </div>
           <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">{{ t('activeMasternodes') }}</span>
           <span class="text-2xl font-extrabold text-slate-800 mt-1.5">{{ masternodesCount.toLocaleString() }}</span>
-          <span class="text-[10px] text-mint-600 font-semibold mt-1">With 20k KRISTA collateral</span>
+          <span class="text-[10px] text-mint-600 font-semibold mt-1">With 2,100 KRISTA collateral</span>
         </div>
 
         <div class="glass-card rounded-2xl p-6 border border-slate-200/50 flex flex-col justify-center items-center shadow-sm relative overflow-hidden group">
@@ -310,7 +296,7 @@ const requiredCollateral = computed(() => {
           </div>
           <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">{{ t('currentSupply') }}</span>
           <span class="text-2xl font-extrabold text-slate-800 mt-1.5">{{ circulatingSupply.toLocaleString() }}</span>
-          <span class="text-[10px] text-sky-blue-600 font-semibold mt-1">100M KRISTA Hard Cap</span>
+          <span class="text-[10px] text-sky-blue-600 font-semibold mt-1">210M KRISTA Hard Cap</span>
         </div>
 
         <div class="glass-card rounded-2xl p-6 border border-slate-200/50 flex flex-col justify-center items-center shadow-sm relative overflow-hidden group">
@@ -499,34 +485,62 @@ const requiredCollateral = computed(() => {
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 px-4 items-start">
         <!-- Tokenomics Detail Card -->
         <div class="lg:col-span-5 glass-card rounded-2xl p-8 border border-slate-200/50 space-y-6 shadow-sm">
-          <h3 class="text-lg font-bold text-slate-800 tracking-wide">Emission Parameters</h3>
+          <h3 class="text-lg font-bold text-slate-800 tracking-wide">
+            <span v-if="locale === 'tr'">Emisyon Parametreleri</span>
+            <span v-else>Emission Parameters</span>
+          </h3>
           <p class="text-slate-500 text-xs sm:text-sm leading-relaxed">
-            KRISTA implements a sustainable token emission protocol featuring a hard cap of 100M tokens and a yearly 20% decay rate, providing a highly predictable supply curve.
+            <span v-if="locale === 'tr'">
+              KRISTA, 210M tokenlik bir maksimum arz limiti ve 3 ayda bir %1.9 azalma (decay) oranı sunan sürdürülebilir bir emisyon protokolü uygulayarak öngörülebilir bir arz eğrisi sağlar.
+            </span>
+            <span v-else>
+              KRISTA implements a sustainable token emission protocol featuring a hard cap of 210M tokens and a quarterly 1.9% decay rate, providing a highly predictable supply curve.
+            </span>
           </p>
 
           <div class="space-y-4 pt-4 border-t border-slate-200/50">
             <div class="flex items-center justify-between text-xs sm:text-sm">
-              <span class="text-slate-400">Hard Cap:</span>
-              <span class="font-bold text-slate-700">100,000,000 KRISTA</span>
+              <span class="text-slate-400">
+                <span v-if="locale === 'tr'">Maksimum Arz:</span>
+                <span v-else>Hard Cap:</span>
+              </span>
+              <span class="font-bold text-slate-700">210,000,000 KRISTA</span>
             </div>
             <div class="flex items-center justify-between text-xs sm:text-sm">
-              <span class="text-slate-400">Decay Rate:</span>
-              <span class="font-bold text-mint-600">20% Year-over-Year</span>
+              <span class="text-slate-400">
+                <span v-if="locale === 'tr'">Azalma Oranı:</span>
+                <span v-else>Decay Rate:</span>
+              </span>
+              <span class="font-bold text-mint-600">
+                <span v-if="locale === 'tr'">Her 90 Günde Bir %1.9</span>
+                <span v-else>1.9% Quarterly (90 Days)</span>
+              </span>
             </div>
             <div class="flex items-center justify-between text-xs sm:text-sm">
-              <span class="text-slate-400">Initial Block Reward (Block 1000):</span>
-              <span class="font-bold text-slate-700">14.5 KRISTA</span>
+              <span class="text-slate-400">
+                <span v-if="locale === 'tr'">Başlangıç Blok Ödülü (10.000. Blok):</span>
+                <span v-else>Initial Block Reward (Block 10,000):</span>
+              </span>
+              <span class="font-bold text-slate-700">15.0 KRISTA</span>
             </div>
             <div class="flex items-center justify-between text-xs sm:text-sm">
-              <span class="text-slate-400">Premine Allocation:</span>
-              <span class="font-bold text-slate-700">5,000,000 KRISTA</span>
+              <span class="text-slate-400">
+                <span v-if="locale === 'tr'">Ön Madencilik (Premine):</span>
+                <span v-else>Premine Allocation:</span>
+              </span>
+              <span class="font-bold text-slate-700">0 KRISTA (No Premine)</span>
             </div>
           </div>
 
           <div class="p-4 bg-mint-500/5 rounded-xl border border-mint-500/10 flex items-start gap-3">
             <UIcon name="i-heroicons-information-circle" class="w-5 h-5 text-mint-600 shrink-0 mt-0.5" />
             <p class="text-[11px] text-mint-700 leading-relaxed">
-              Block reward decay occurs every 1,051,200 blocks (~1 year). The Developer Fund (7%) and Faucet (0.7%) splits are enforced at the protocol level.
+              <span v-if="locale === 'tr'">
+                Blok ödülü azalması her 259.200 blokta bir (~90 gün) gerçekleşir. Geliştirici Fonu (%7) ve Başlangıç Musluğu (%0.7) kesintileri protokol seviyesinde zorunludur.
+              </span>
+              <span v-else>
+                Block reward decay occurs every 259,200 blocks (~90 days). The Developer Fund (7%) and Faucet (0.7%) splits are enforced at the protocol level.
+              </span>
             </p>
           </div>
         </div>
@@ -726,25 +740,25 @@ const requiredCollateral = computed(() => {
             <div class="flex-1 text-right hidden md:block pr-8">
               <span 
                 class="text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border"
-                :class="currentBlock >= 1000 ? 'text-mint-600 bg-mint-500/10 border-mint-500/20' : (currentBlock >= 200 ? 'text-sky-blue-600 bg-sky-blue-500/10 border-sky-blue-500/20' : 'text-slate-400 bg-slate-100 border-slate-200')"
+                :class="currentBlock >= 2000 ? 'text-mint-600 bg-mint-500/10 border-mint-500/20' : (currentBlock >= 200 ? 'text-sky-blue-600 bg-sky-blue-500/10 border-sky-blue-500/20' : 'text-slate-400 bg-slate-100 border-slate-200')"
               >
-                {{ currentBlock >= 1000 ? 'Active' : (currentBlock >= 200 ? 'Next Phase' : 'Future') }}
+                {{ currentBlock >= 2000 ? 'Active' : (currentBlock >= 200 ? 'Next Phase' : 'Future') }}
               </span>
             </div>
 
             <!-- Bullet point node -->
             <div 
               class="w-6 h-6 rounded-full border-4 border-[#f3f7f5] shadow-md z-10 shrink-0"
-              :class="currentBlock >= 1000 ? 'bg-mint-500 shadow-mint-500/40' : (currentBlock >= 200 ? 'bg-sky-blue-500 shadow-sky-blue-500/20' : 'bg-slate-300')"
+              :class="currentBlock >= 2000 ? 'bg-mint-500 shadow-mint-500/40' : (currentBlock >= 200 ? 'bg-sky-blue-500 shadow-sky-blue-500/20' : 'bg-slate-300')"
             ></div>
 
             <div class="flex-1 glass-card rounded-2xl p-6 border border-slate-200/50 shadow-sm pl-8 text-left">
               <div class="md:hidden mb-2">
                 <span 
                   class="text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border"
-                  :class="currentBlock >= 1000 ? 'text-mint-600 bg-mint-500/10 border-mint-500/20' : (currentBlock >= 200 ? 'text-sky-blue-600 bg-sky-blue-500/10 border-sky-blue-500/20' : 'text-slate-400 bg-slate-100 border-slate-200')"
+                  :class="currentBlock >= 2000 ? 'text-mint-600 bg-mint-500/10 border-mint-500/20' : (currentBlock >= 200 ? 'text-sky-blue-600 bg-sky-blue-500/10 border-sky-blue-500/20' : 'text-slate-400 bg-slate-100 border-slate-200')"
                 >
-                  {{ currentBlock >= 1000 ? 'Active' : (currentBlock >= 200 ? 'Next Phase' : 'Future') }}
+                  {{ currentBlock >= 2000 ? 'Active' : (currentBlock >= 200 ? 'Next Phase' : 'Future') }}
                 </span>
               </div>
               <h3 class="text-base font-bold text-slate-800">{{ t('phase3') }}</h3>
@@ -759,16 +773,16 @@ const requiredCollateral = computed(() => {
             <!-- Bullet point node -->
             <div 
               class="w-6 h-6 rounded-full border-4 border-[#f3f7f5] shadow-md z-10 shrink-0 md:order-2"
-              :class="currentBlock >= 1200 ? 'bg-mint-500 shadow-mint-500/40' : (currentBlock >= 1000 ? 'bg-sky-blue-500 shadow-sky-blue-500/20' : 'bg-slate-300')"
+              :class="currentBlock >= 2200 ? 'bg-mint-500 shadow-mint-500/40' : (currentBlock >= 2000 ? 'bg-sky-blue-500 shadow-sky-blue-500/20' : 'bg-slate-300')"
             ></div>
 
             <div class="flex-1 glass-card rounded-2xl p-6 border border-slate-200/50 shadow-sm pr-8 text-left md:text-right md:order-1">
               <div class="mb-2">
                 <span 
                   class="text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border"
-                  :class="currentBlock >= 1200 ? 'text-mint-600 bg-mint-500/10 border-mint-500/20' : (currentBlock >= 1000 ? 'text-sky-blue-600 bg-sky-blue-500/10 border-sky-blue-500/20' : 'text-slate-400 bg-slate-100 border-slate-200')"
+                  :class="currentBlock >= 2200 ? 'text-mint-600 bg-mint-500/10 border-mint-500/20' : (currentBlock >= 2000 ? 'text-sky-blue-600 bg-sky-blue-500/10 border-sky-blue-500/20' : 'text-slate-400 bg-slate-100 border-slate-200')"
                 >
-                  {{ currentBlock >= 1200 ? 'Active' : (currentBlock >= 1000 ? 'Next Phase' : 'Future') }}
+                  {{ currentBlock >= 2200 ? 'Active' : (currentBlock >= 2000 ? 'Next Phase' : 'Future') }}
                 </span>
               </div>
               <h3 class="text-base font-bold text-slate-800">{{ t('phase4') }}</h3>
