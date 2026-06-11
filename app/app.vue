@@ -4,6 +4,10 @@ import { useI18n } from '~/composables/useI18n'
 
 const { locale, setLocale, t } = useI18n()
 
+useHead({
+  title: computed(() => `KristaTech (KRISTA) - ${t('brandTagline')}`)
+})
+
 // Active section for highlighting nav items
 const activeSection = ref('')
 const sections = ['features', 'tokenomics', 'roadmap']
@@ -51,7 +55,7 @@ onUnmounted(() => {
           </div>
           <div>
             <h1 class="font-extrabold text-xl tracking-wider text-slate-800 flex items-center gap-2">
-              KRISTA
+              KristaTech (KRISTA)
               <span class="text-[10px] font-bold tracking-normal px-2 py-0.5 rounded-md bg-mint-500/10 text-mint-600 border border-mint-500/20">
                 CORE
               </span>
@@ -234,7 +238,7 @@ onUnmounted(() => {
         <div class="flex items-center gap-3">
           <img src="/logo.svg" alt="KristaTech Logo" class="w-7 h-7 opacity-90" />
           <div>
-            <span class="font-bold text-slate-700 tracking-wider">KRISTA</span>
+            <span class="font-bold text-slate-700 tracking-wider">KristaTech (KRISTA)</span>
             <span class="text-xs text-slate-400 block sm:inline sm:ml-2">{{ t('brandTagline') }}</span>
           </div>
         </div>
