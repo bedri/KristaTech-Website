@@ -4,22 +4,58 @@ import { useI18n } from '~/composables/useI18n'
 
 const { locale, t } = useI18n()
 
-// Fetch real-time status from our server API proxy
+// Fetch real-time blockchain status from server API proxy
 const { data: statusData, refresh } = await useFetch('/api/status', {
   key: 'blockchain-status'
 })
 
-// 1. Hero Countdown Milestones
-const currentBlock = ref(statusData.value?.height ?? 199)
-const masternodesCount = computed(() => {
-  return statusData.value?.masternodes?.enabled ?? 0
-})
-const circulatingSupply = computed(() => {
-  return statusData.value?.totalSupply ?? 19800
-})
+// 1. Live Blockchain & Milestone Telemetry
+const currentBlock = ref(statusData.value?.height ?? 997)
+const masternodesCount = computed(() => statusData.value?.masternodes?.enabled ?? 0)
+const circulatingSupply = computed(() => statusData.value?.totalSupply ?? 19800)
 
-const blocksRemaining = computed(() => Math.max(0, 200 - currentBlock.value))
-const progressPercentage = computed(() => Math.min(100, (currentBlock.value / 200) * 100))
+const nextMilestone = computed(() => {
+  const h = currentBlock.value
+  const isTr = locale.value === 'tr'
+  if (h < 200) {
+    return {
+      target: 200,
+      prev: 1,
+      eraName: isTr ? 'Aşama 1: Genesis ve MESCAL' : 'Phase 1: Genesis & MESCAL',
+      nextName: isTr ? 'Aşama 2: PoS ve ADAM (Blok 200)' : 'Phase 2: PoS & ADAM (Block 200)',
+      remaining: 200 - h,
+      progress: Math.min(100, Math.max(2, (h / 200) * 100))
+    }
+  }
+  if (h < 2000) {
+    return {
+      target: 2000,
+      prev: 200,
+      eraName: isTr ? 'Aşama 2 Aktif: PoS + ADAM VRF' : 'Phase 2 Active: PoS + ADAM VRF',
+      nextName: isTr ? 'Aşama 3: PoBLS Çekilişi (Blok 2.000)' : 'Phase 3: PoBLS Lottery (Block 2,000)',
+      remaining: 2000 - h,
+      progress: Math.min(100, Math.max(5, ((h - 200) / 1800) * 100))
+    }
+  }
+  if (h < 2200) {
+    return {
+      target: 2200,
+      prev: 2000,
+      eraName: isTr ? 'Aşama 3 Aktif: PoBLS Eşik Çekilişi' : 'Phase 3 Active: PoBLS Threshold Lottery',
+      nextName: isTr ? 'Aşama 4: Model D Dağılımı (Blok 2.200)' : 'Phase 4: Model D Splits (Block 2,200)',
+      remaining: 2200 - h,
+      progress: Math.min(100, Math.max(5, ((h - 2000) / 200) * 100))
+    }
+  }
+  return {
+    target: 10000,
+    prev: 2200,
+    eraName: isTr ? 'Aşama 4 Aktif: Tam Model D Konsensüsü' : 'Phase 4 Active: Full Model D Consensus',
+    nextName: isTr ? 'Standart Emisyon (Blok 10.000)' : 'Standard Emission (Block 10,000)',
+    remaining: Math.max(0, 10000 - h),
+    progress: Math.min(100, Math.max(10, ((h - 2200) / 7800) * 100))
+  }
+})
 
 function scrollToSection(id) {
   const element = document.getElementById(id)
@@ -31,7 +67,6 @@ function scrollToSection(id) {
 let timer = null
 
 onMounted(() => {
-  // Poll every 5 seconds for live blockchain info
   timer = setInterval(async () => {
     try {
       await refresh()
@@ -50,63 +85,80 @@ onUnmounted(() => {
   }
 })
 
-// 2. Interactive Feature: ADAM Consensus
+// 2. Interactive Feature: ADAM Consensus Simulator
 const isSimulatingConsensus = ref(false)
 const consensusStep = ref(-1)
-const consensusSteps = [
-  'Generating VRF seed from previous block...',
-  'Electing committee (11 Miners, 1 Coordinator)...',
-  'Miners solving dynamic puzzles (ASIC-resistant)...',
-  'Aggregating BLS signature shares (BLST)...',
-  'Block verified and committed to KRISTA chain!'
-]
+const consensusSteps = computed(() =>
+  locale.value === 'tr'
+    ? [
+        'Önceki bloktan VRF tohumu (rolling-seed) üretiliyor...',
+        'Komite seçiliyor: 11 Madenci + 1 Koordinatör...',
+        '13 dinamik ASIC-dirençli bulmaca doğrulanıyor (X11KVS/Hamsi/Fugue)...',
+        'BLST secp256k1 imza payları birleştiriliyor...',
+        'Blok doğrulandı ve KRISTA zincirine işlendi!'
+      ]
+    : [
+        'Generating VRF rolling-seed from previous block...',
+        'Electing round committee (11 Miners, 1 Coordinator)...',
+        'Verifying 13 dynamic ASIC-resistant puzzles (X11KVS/Hamsi/Fugue)...',
+        'Aggregating BLS signature shares (supranational/blst)...',
+        'Block verified and committed to KRISTA chain!'
+      ]
+)
 
 function startConsensusSim() {
   if (isSimulatingConsensus.value) return
   isSimulatingConsensus.value = true
   consensusStep.value = 0
   const interval = setInterval(() => {
-    if (consensusStep.value < consensusSteps.length - 1) {
+    if (consensusStep.value < consensusSteps.value.length - 1) {
       consensusStep.value++
     } else {
       clearInterval(interval)
       setTimeout(() => {
         isSimulatingConsensus.value = false
         consensusStep.value = -1
-      }, 1500)
+      }, 1800)
     }
-  }, 1000)
+  }, 950)
 }
 
-// 3. Interactive Feature: PoBLS Lottery
+// 3. Interactive Feature: PoBLS Lottery Simulator
 const isLotteryRunning = ref(false)
-const selectedCommittee = ref([])
+const selectedCommittee = ref([
+  'KTNode_Alpha_7b43',
+  'KTNode_Delta_e851',
+  'KTNode_Zeta_19da'
+])
 const candidates = [
-  'KTNode_Alpha_7b43', 'KTNode_Beta_92a1', 'KTNode_Gamma_04f8', 
-  'KTNode_Delta_e851', 'KTNode_Epsilon_38c9', 'KTNode_Zeta_19da', 
+  'KTNode_Alpha_7b43', 'KTNode_Beta_92a1', 'KTNode_Gamma_04f8',
+  'KTNode_Delta_e851', 'KTNode_Epsilon_38c9', 'KTNode_Zeta_19da',
   'KTNode_Eta_44bc', 'KTNode_Theta_66f1'
 ]
 
 function runLottery() {
   if (isLotteryRunning.value) return
   isLotteryRunning.value = true
-  selectedCommittee.value = []
-  
+
   let counter = 0
   const interval = setInterval(() => {
-    selectedCommittee.value = Array.from({ length: 3 }, () => candidates[Math.floor(Math.random() * candidates.length)])
+    selectedCommittee.value = Array.from(
+      { length: 3 },
+      () => candidates[Math.floor(Math.random() * candidates.length)]
+    )
     counter++
-    if (counter > 12) {
+    if (counter > 10) {
       clearInterval(interval)
       const shuffled = [...candidates].sort(() => 0.5 - Math.random())
       selectedCommittee.value = shuffled.slice(0, 3)
       isLotteryRunning.value = false
     }
-  }, 100)
+  }, 90)
 }
 
-// 4. Interactive Feature: MESCAL Smart Contracts
+// 4. Interactive Feature: MESCAL Smart Contracts Studio
 const mescalTemplate = ref('escrow')
+const copiedBytecode = ref(false)
 const mescalParams = ref({
   amount: 1000,
   locktime: 2880,
@@ -115,49 +167,84 @@ const mescalParams = ref({
 
 const mescalBytecode = computed(() => {
   if (mescalTemplate.value === 'escrow') {
-    return `OP_INIT_CONTRACT
+    return `OP_INIT_CONTRACT "COIN_LOCK_MINER"
 OP_CHECK_COLLATERAL ${mescalParams.value.amount}_KRISTA
 OP_PUSH_TIMEOUT ${mescalParams.value.locktime}_BLOCKS
 OP_IF_EXPIRED
-  OP_SEND_TO_SENDER
+  OP_RETURN_TO_OWNER "${mescalParams.value.refundAddress}"
 OP_ELSE
-  OP_LOCK_MINER_REGISTRATION
+  OP_REGISTER_MINER_ELIGIBILITY
 OP_ENDIF`
   } else if (mescalTemplate.value === 'vesting') {
-    return `OP_INIT_CONTRACT
-OP_SET_VESTING_START
+    return `OP_INIT_CONTRACT "LINEAR_VESTING"
+OP_SET_VESTING_START BLOCK_CURRENT
 OP_PUSH_RATE 20_PERCENT_PER_YEAR
 OP_CHECK_TIMELOCK 730_DAYS
-OP_CLAIM_RELEASE
+OP_CLAIM_PROPORTIONAL_RELEASE
 OP_END_CONTRACT`
   } else {
-    return `OP_INIT_CONTRACT
+    return `OP_INIT_CONTRACT "ASSET_TOKENIZATION"
 OP_MINT_ASSET "KRISTA_TICKET"
 OP_SET_MAX_SUPPLY 100000000
 OP_MINT_TO_SENDER 5000000
-OP_LOCK_METADATA
+OP_LOCK_IMMUTABLE_METADATA
 OP_END_CONTRACT`
   }
 })
 
+async function copyMescalBytecode() {
+  try {
+    if (import.meta.client && navigator.clipboard) {
+      await navigator.clipboard.writeText(mescalBytecode.value)
+      copiedBytecode.value = true
+      setTimeout(() => {
+        copiedBytecode.value = false
+      }, 2000)
+    }
+  } catch {
+    copiedBytecode.value = false
+  }
+}
+
 // 5. Interactive Tokenomics Calculator
-const calcHeight = ref(statusData.value?.height ?? 2200)
+const calcHeight = ref(2200)
+const heightPresets = [
+  { labelTr: 'Genesis (1)', labelEn: 'Genesis (1)', height: 1 },
+  { labelTr: 'Başlangıç (500)', labelEn: 'Bootstrap (500)', height: 500 },
+  { labelTr: 'Model D (2.200)', labelEn: 'Model D (2,200)', height: 2200 },
+  { labelTr: 'Standart (10.000)', labelEn: 'Standard (10,000)', height: 10000 },
+  { labelTr: '2. Çeyrek (269.200)', labelEn: 'Quarter 2 (269,200)', height: 269200 },
+  { labelTr: '1. Yıl (1.051.200)', labelEn: 'Year 1 (1,051,200)', height: 1051200 }
+]
+
+const sliderProgressPercent = computed(() => {
+  const val = Math.min(3500000, Math.max(1, Number(calcHeight.value) || 1))
+  return `${((val - 1) / (3500000 - 1)) * 100}%`
+})
 
 const totalReward = computed(() => {
   const h = Number(calcHeight.value)
-  if (h <= 1) return 0 // Premine block (0 KRISTA)
-  if (h < 10000) return 100 // Bootstrap phase
+  if (h <= 1) return 0
+  if (h < 10000) return 100
 
-  // 1.9% decay every 90 days (259,200 blocks) starting at block 10,000
   const period = Math.floor((h - 10000) / 259200)
   const subsidy = 15.0 * Math.pow(0.981, period)
-  // Round to nearest satoshi (8 decimal places)
   return Math.max(0, parseFloat((Math.floor(subsidy * 1e8 + 0.5) / 1e8).toFixed(8)))
+})
+
+const emissionEpochLabel = computed(() => {
+  const h = Number(calcHeight.value)
+  const isTr = locale.value === 'tr'
+  if (h <= 1) return isTr ? 'Genesis Bloğu (0 Premine)' : 'Genesis Block (0 Premine)'
+  if (h < 2200) return isTr ? 'Erken Başlangıç Dönemi (100 KRISTA)' : 'Early Bootstrap Era (100 KRISTA)'
+  if (h < 10000) return isTr ? 'Model D Başlangıç Dönemi (100 KRISTA)' : 'Model D Bootstrap Era (100 KRISTA)'
+  const period = Math.floor((h - 10000) / 259200) + 1
+  return isTr ? `Standart Emisyon • Çeyrek #${period} (%1.9 Azalma)` : `Standard Emission • Quarter #${period} (1.9% Decay)`
 })
 
 const splitPercentages = computed(() => {
   const h = Number(calcHeight.value)
-  
+
   if (h <= 1) {
     return {
       dev: 0.0,
@@ -173,7 +260,6 @@ const splitPercentages = computed(() => {
   const faucetPercent = h <= 50000 ? 0.7 : 0.0
   const remaining = 100.0 - devPercent - faucetPercent
 
-  // Model D activates at block 2200 on Mainnet
   if (h >= 2200) {
     return {
       dev: devPercent,
@@ -185,7 +271,6 @@ const splitPercentages = computed(() => {
     }
   }
 
-  // Before block 2200 (since h < 2200 is <= 5000), Masternode payee receives 0%
   return {
     dev: devPercent,
     faucet: faucetPercent,
@@ -203,605 +288,1253 @@ const quorumRewardAmount = computed(() => parseFloat((totalReward.value * (split
 const participantsRewardAmount = computed(() => parseFloat((totalReward.value * (splitPercentages.value.participants / 100)).toFixed(4)))
 const producerRewardAmount = computed(() => parseFloat((totalReward.value * (splitPercentages.value.producer / 100)).toFixed(4)))
 
-const requiredCollateral = computed(() => {
-  return 2100
+const requiredCollateral = computed(() => 2100)
+
+// Strictly harmonious logo-derived palette for all 6 reward segments
+const allocationRows = computed(() => [
+  {
+    key: 'mn',
+    label: t('masternodeReward'),
+    percent: splitPercentages.value.mn,
+    amount: mnRewardAmount.value,
+    dotClass: 'bg-[#7695CD]',
+    barClass: 'bg-[#7695CD]'
+  },
+  {
+    key: 'participants',
+    label: t('participantsReward'),
+    percent: splitPercentages.value.participants,
+    amount: participantsRewardAmount.value,
+    dotClass: 'bg-[#46649e]',
+    barClass: 'bg-[#46649e]'
+  },
+  {
+    key: 'producer',
+    label: t('validatorReward'),
+    percent: splitPercentages.value.producer,
+    amount: producerRewardAmount.value,
+    dotClass: 'bg-[#F5897C]',
+    barClass: 'bg-[#F5897C]'
+  },
+  {
+    key: 'quorum',
+    label: t('quorumReward'),
+    percent: splitPercentages.value.quorum,
+    amount: quorumRewardAmount.value,
+    dotClass: 'bg-[#a4bce8]',
+    barClass: 'bg-[#a4bce8]'
+  },
+  {
+    key: 'dev',
+    label: t('devReward'),
+    percent: splitPercentages.value.dev,
+    amount: devRewardAmount.value,
+    dotClass: 'bg-[#d45849]',
+    barClass: 'bg-[#d45849]'
+  },
+  {
+    key: 'faucet',
+    label: t('faucetReward'),
+    percent: splitPercentages.value.faucet,
+    amount: faucetRewardAmount.value,
+    dotClass: 'bg-[#f8b8af]',
+    barClass: 'bg-[#f8b8af]'
+  }
+])
+
+// 6. Technical Specifications & Documentation Cards
+const chainSpecs = computed(() => {
+  const isTr = locale.value === 'tr'
+  return [
+    {
+      label: isTr ? 'Ağ Sembolü (Ticker)' : 'Network Ticker',
+      value: 'KRISTA'
+    },
+    {
+      label: isTr ? 'Konsensüs Mimarisi' : 'Consensus Architecture',
+      value: 'Hybrid PoW / PoS + ADAM + PoBLS'
+    },
+    {
+      label: isTr ? 'Madencilik Algoritmaları' : 'Mining Algorithms',
+      value: isTr ? '13 Dinamik Algoritma (X11KVS, Hamsi, Fugue, Shabal, Haval-256...)' : '13 Dynamic Algorithms (X11KVS, Hamsi, Fugue, Shabal, Haval-256...)'
+    },
+    {
+      label: isTr ? 'Kriptografik İmza ve Eğri' : 'Cryptographic Curve & Signatures',
+      value: 'secp256k1 + BLS12-381 / supranational-blst'
+    },
+    {
+      label: isTr ? 'Hedef Blok Süresi' : 'Target Block Spacing',
+      value: isTr ? '30 Saniye (Günde 2.880 Blok)' : '30 Seconds (2,880 Blocks / Day)'
+    },
+    {
+      label: isTr ? 'Maksimum Arz (Hard Cap)' : 'Maximum Supply (Hard Cap)',
+      value: '210,000,000 KRISTA'
+    },
+    {
+      label: isTr ? 'Ön Madencilik (Premine)' : 'Premine Allocation',
+      value: isTr ? '0 KRISTA (%100 Adil Başlangıç)' : '0 KRISTA (100% Fair Launch)'
+    },
+    {
+      label: isTr ? 'Akıllı Sözleşme Katmanı' : 'Smart Contract Layer',
+      value: isTr ? 'MESCAL (Sıfır Gaz Ücretli Deterministik Sandbox)' : 'MESCAL (Zero-Gas Deterministic Sandbox)'
+    }
+  ]
+})
+
+const researchPapers = computed(() => {
+  const isTr = locale.value === 'tr'
+  const base = 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc'
+  return [
+    {
+      code: 'DOC-01',
+      badge: 'WHITEPAPER',
+      accent: 'cobalt',
+      title: isTr ? 'KristaTech Teknik Dokümanı (Whitepaper)' : 'KristaTech Technical Whitepaper',
+      desc: isTr
+        ? 'Kooperatif konsensüs mimarisi, kriptografik ilkeller ve ağ vizyonunun kapsamlı akademik özeti.'
+        : 'Comprehensive architectural blueprint covering cooperative consensus, cryptographic primitives, and network design.',
+      href: `${base}/${isTr ? 'Whitepaper_TR.md' : 'Whitepaper.md'}`
+    },
+    {
+      code: 'DOC-02',
+      badge: 'VRF + 13 ALGO',
+      accent: 'coral',
+      title: isTr ? 'ADAM Konsensüs Protokolü' : 'ADAM Consensus Specification',
+      desc: isTr
+        ? 'Doğrulanabilir Rastgele İşlevler (VRF), döngüsel tohum ve 11 madenci + 1 koordinatör komite seçimi.'
+        : 'Verifiable Random Functions (VRF), rolling-seed state machine, and 11 miners + 1 coordinator committee election.',
+      href: `${base}/${isTr ? 'ADAM_Consensus_TR.md' : 'ADAM_Consensus.md'}`
+    },
+    {
+      code: 'DOC-03',
+      badge: 'BLST QUORUM',
+      accent: 'cobalt',
+      title: isTr ? 'Proof of BLS (PoBLS) Konsensüsü' : 'Proof of BLS (PoBLS) Consensus',
+      desc: isTr
+        ? 'Supranational/blst kütüphanesi ile secp256k1 üzerinde çalışan manipüle edilemez eşik çekiliş sistemi.'
+        : 'Cryptographic threshold lottery powered by supranational/blst for unbiasable quorum verification.',
+      href: `${base}/${isTr ? 'PoBLS_Consensus_TR.md' : 'PoBLS_Consensus.md'}`
+    },
+    {
+      code: 'DOC-04',
+      badge: '0-GAS VM',
+      accent: 'coral',
+      title: isTr ? 'MESCAL Akıllı Sözleşmeleri' : 'MESCAL Smart Contracts',
+      desc: isTr
+        ? 'Gaz ücreti bulunmayan görsel akıllı sözleşme şablonları: Emanet, hak ediş, tokenizasyon ve Coin-Lock.'
+        : 'Gas-free visual smart contract templates for escrow, linear vesting, asset minting, and Coin-Lock.',
+      href: `${base}/${isTr ? 'MESCAL_TR.md' : 'MESCAL.md'}`
+    },
+    {
+      code: 'DOC-05',
+      badge: 'MODEL D',
+      accent: 'cobalt',
+      title: isTr ? 'Token Ekonomisi Çalışması' : 'Tokenomics & Model D Study',
+      desc: isTr
+        ? '%50 pasif Masternode, %25 doğrulayıcı seti, %15 blok üreticisi ve %10 aktif quorum ödül matematiği.'
+        : 'Economic modeling of the 50% Masternode, 25% Validator Set, 15% Producer, and 10% Quorum split engine.',
+      href: `${base}/${isTr ? 'Tokenomics_Study_TR.md' : 'Tokenomics_Study.md'}`
+    },
+    {
+      code: 'DOC-06',
+      badge: '210M CAP',
+      accent: 'coral',
+      title: isTr ? 'Hardcap ve Emisyon Analizi' : 'Hardcap & Emission Analysis',
+      desc: isTr
+        ? '210 milyon KRISTA maksimum arz sınırı ve 90 günde bir %1.9 geometrik azalma eğrisi simülasyonu.'
+        : 'Long-term supply curve verification proving the strict 210M hard cap and 1.9% quarterly geometric decay.',
+      href: `${base}/${isTr ? 'Hardcap_Analysis_TR.md' : 'Hardcap_Analysis.md'}`
+    },
+    {
+      code: 'DOC-07',
+      badge: 'COIN-LOCK',
+      accent: 'cobalt',
+      title: isTr ? 'Madenci Kaydı Rehberi' : 'Miner Registration Guide',
+      desc: isTr
+        ? 'Cüzdan içi 1.000 KRISTA teminatlı (2.880 blok kilitli) Coin-Lock madenci kayıt adımları.'
+        : 'Step-by-step operator guide for 1,000 KRISTA timelocked (2,880 blocks) Coin-Lock miner registration.',
+      href: `${base}/${isTr ? 'Miner_Registration_TR.md' : 'Miner_Registration.md'}`
+    },
+    {
+      code: 'DOC-08',
+      badge: 'AUDIT',
+      accent: 'coral',
+      title: isTr ? 'Protokol Güvenlik Denetimi' : 'Protocol Security Audit',
+      desc: isTr
+        ? 'Konsensüs kuralları, kriptografik doğrulama, ağ katmanı ve akıllı sözleşme güvenlik incelemesi.'
+        : 'Comprehensive security review of consensus rules, BLST verification, P2P hardening, and MESCAL safety.',
+      href: `${base}/${isTr ? 'Security_Audit_TR.md' : 'Security_Audit.md'}`
+    }
+  ]
 })
 </script>
 
 <template>
-  <div class="space-y-24 py-12">
-    <!-- Hero Section -->
-    <section class="relative flex flex-col items-center justify-center text-center px-4 py-8">
-      <!-- Background glowing lights -->
-      <div class="absolute w-96 h-96 rounded-full bg-mint-500/5 blur-[120px] top-[-50px] left-[20%] pointer-events-none"></div>
-      <div class="absolute w-96 h-96 rounded-full bg-sky-blue-500/5 blur-[120px] bottom-0 right-[20%] pointer-events-none"></div>
+  <UContainer class="space-y-24 sm:space-y-32 py-10 sm:py-16">
+    <!-- 1. HERO SECTION (Harmonious Glassmorphic Split Layout) -->
+    <section class="relative pt-2 sm:pt-6">
+      <!-- Ambient Logo-Colored Soft Glows -->
+      <div class="absolute -top-12 left-4 w-80 h-80 rounded-full bg-[#7695CD]/15 blur-[110px] pointer-events-none"></div>
+      <div class="absolute top-16 right-4 w-80 h-80 rounded-full bg-[#F5897C]/15 blur-[110px] pointer-events-none"></div>
 
-      <!-- Mainnet 200 Milestone Banner -->
-      <div 
-        class="mb-8 p-0.5 rounded-2xl bg-gradient-to-r from-mint-500/20 via-sky-blue-500/20 to-mint-500/20 border border-slate-200/50 backdrop-blur-md inline-block max-w-lg shadow-sm hover:shadow-md transition-shadow"
-      >
-        <div class="bg-white px-5 py-2.5 rounded-[14px] flex flex-col gap-1.5 items-center">
-          <div class="flex items-center gap-2 text-xs font-bold tracking-wider text-slate-700">
-            <span class="w-2 h-2 rounded-full bg-mint-500" :class="{ 'animate-ping': currentBlock < 200 }"></span>
-            <span v-if="currentBlock < 200">HYBRID upgrade: block {{ currentBlock }}</span>
-            <span v-else class="text-mint-600">Hybrid Consensus active: block 200 activated!</span>
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center relative">
+        <!-- Left Column: Brand Value Proposition & Actions -->
+        <div class="lg:col-span-7 space-y-6 text-left hero-title-container">
+          <!-- Harmonious Live Network Pill -->
+          <div class="inline-flex flex-wrap items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/85 dark:bg-slate-900/85 border border-cobalt-300/60 dark:border-slate-700 shadow-xs">
+            <span class="inline-flex items-center gap-2 text-xs font-bold text-cobalt-700 dark:text-cobalt-300">
+              <span class="relative flex h-2 w-2">
+                <span class="pulse-indicator animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F5897C] opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-[#F5897C]"></span>
+              </span>
+              {{ t('liveNetwork') }}
+            </span>
+            <span class="text-cobalt-200 dark:text-slate-700">•</span>
+            <span class="text-xs font-mono font-bold text-coral-600 dark:text-coral-300">
+              {{ locale === 'tr' ? `Blok #${currentBlock.toLocaleString()}` : `Block #${currentBlock.toLocaleString()}` }}
+            </span>
+            <span class="hidden sm:inline text-cobalt-200 dark:text-slate-700">•</span>
+            <span class="hidden sm:inline text-xs font-mono text-slate-500 dark:text-slate-400">
+              Core v1.4.5.9
+            </span>
           </div>
-          
-          <div v-if="currentBlock < 200" class="w-64 h-1.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200/30 mt-0.5">
-            <div 
-              class="h-full bg-gradient-to-r from-mint-500 to-sky-blue-500 transition-all duration-500" 
-              :style="{ width: `${progressPercentage}%` }"
-            ></div>
+
+          <!-- Main Headline with Fluid Container Scaling -->
+          <h1 class="hero-fluid-title font-extrabold tracking-tight text-slate-800 dark:text-white leading-[1.14]">
+            <span v-if="locale === 'tr'">
+              Güvenli, Huzurlu ve Kurumsal
+              <span class="brand-gradient-text">Kooperatif Konsensüs</span>
+              Altyapısı
+            </span>
+            <span v-else>
+              Calm, Secure &amp; Institutional
+              <span class="brand-gradient-text">Cooperative Consensus</span>
+              Infrastructure
+            </span>
+          </h1>
+
+          <!-- Subtitle -->
+          <p class="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl leading-relaxed">
+            {{ t('heroSubtitle') }}
+          </p>
+
+          <!-- Primary CTA Buttons -->
+          <div class="flex flex-wrap items-center gap-3.5 pt-2">
+            <button
+              type="button"
+              @click="scrollToSection('features')"
+              class="btn-brand-primary inline-flex items-center gap-2.5 px-6 py-3.5 rounded-2xl text-sm font-bold cursor-pointer"
+            >
+              <span>{{ t('getStarted') }}</span>
+              <svg aria-hidden="true" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clip-rule="evenodd" />
+              </svg>
+            </button>
+
+            <a
+              href="https://github.com/bedri/KristaTech-KRISTA/releases"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl text-sm font-bold text-cobalt-800 dark:text-cobalt-200 bg-white/85 dark:bg-slate-800/85 hover:border-cobalt-400 border border-cobalt-200/80 dark:border-slate-700 shadow-xs transition-all"
+            >
+              <svg aria-hidden="true" class="w-4 h-4 text-coral-500" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10.75 2.75a.75.75 0 00-1.5 0v8.614L6.295 8.235a.75.75 0 10-1.09 1.03l4.25 4.5a.75.75 0 001.09 0l4.25-4.5a.75.75 0 00-1.09-1.03l-2.955 3.129V2.75z" />
+                <path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z" />
+              </svg>
+              <span>{{ t('downloadWallet') }}</span>
+            </a>
+
+            <a
+              :href="locale === 'tr' ? 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Whitepaper_TR.md' : 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Whitepaper.md'"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-2 px-5 py-3.5 rounded-2xl text-sm font-bold text-slate-700 dark:text-slate-200 bg-cobalt-50/70 dark:bg-slate-800/60 hover:bg-cobalt-100/70 dark:hover:bg-slate-800 border border-cobalt-200/70 dark:border-slate-700 transition-all"
+            >
+              <span>{{ t('viewDocs') }}</span>
+              <svg aria-hidden="true" class="w-4 h-4 text-cobalt-600 dark:text-cobalt-300" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.22 14.78a.75.75 0 001.06 0l7.22-7.22v5.69a.75.75 0 001.5 0v-7.5a.75.75 0 00-.75-.75h-7.5a.75.75 0 000 1.5h5.69l-7.22 7.22a.75.75 0 000 1.06z" clip-rule="evenodd" />
+              </svg>
+            </a>
           </div>
-          
-          <span v-if="currentBlock < 200" class="text-[10px] text-slate-400">
-            <span v-if="locale === 'tr'">Ağ güncellemesine {{ blocksRemaining }} blok kaldı.</span>
-            <span v-else>{{ blocksRemaining }} blocks remaining until block 200.</span>
-          </span>
-          <span v-else class="text-[10px] text-mint-500 font-bold">
-            <span v-if="locale === 'tr'">Konsensüs yükseltildi: PoS ve ADAM aktif!</span>
-            <span v-else>Consensus upgraded. PoS and ADAM active!</span>
-          </span>
+
+          <!-- Architectural Highlights Strip -->
+          <div class="pt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div class="px-4 py-3 rounded-2xl bg-white/80 dark:bg-slate-900/75 border border-cobalt-200/60 dark:border-slate-800">
+              <span class="block text-xs font-mono font-bold text-cobalt-700 dark:text-cobalt-300">0 KRISTA</span>
+              <span class="text-xs text-slate-500 dark:text-slate-400">{{ locale === 'tr' ? 'Ön Madencilik (Adil)' : 'Zero Premine' }}</span>
+            </div>
+            <div class="px-4 py-3 rounded-2xl bg-white/80 dark:bg-slate-900/75 border border-cobalt-200/60 dark:border-slate-800">
+              <span class="block text-xs font-mono font-bold text-coral-600 dark:text-coral-300">13 ALGO</span>
+              <span class="text-xs text-slate-500 dark:text-slate-400">{{ locale === 'tr' ? 'ASIC-Dirençli VRF' : 'ASIC-Resistant VRF' }}</span>
+            </div>
+            <div class="px-4 py-3 rounded-2xl bg-white/80 dark:bg-slate-900/75 border border-cobalt-200/60 dark:border-slate-800">
+              <span class="block text-xs font-mono font-bold text-cobalt-700 dark:text-cobalt-300">BLST QUORUM</span>
+              <span class="text-xs text-slate-500 dark:text-slate-400">secp256k1 PoBLS</span>
+            </div>
+            <div class="px-4 py-3 rounded-2xl bg-white/80 dark:bg-slate-900/75 border border-cobalt-200/60 dark:border-slate-800">
+              <span class="block text-xs font-mono font-bold text-coral-600 dark:text-coral-300">0-GAS VM</span>
+              <span class="text-xs text-slate-500 dark:text-slate-400">MESCAL Sandbox</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Harmonious Glassmorphic Protocol Architecture Card -->
+        <div class="lg:col-span-5">
+          <div class="protocol-card rounded-3xl overflow-hidden">
+            <!-- Top Logo Color Accent Bar -->
+            <div class="h-1.5 w-full brand-accent-bar"></div>
+
+            <!-- Card Header -->
+            <div class="p-6 sm:p-7 border-b border-cobalt-200/50 dark:border-slate-800 flex items-center justify-between gap-4">
+              <div class="flex items-center gap-3.5">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-white via-cobalt-50 to-coral-50 dark:from-slate-800 dark:to-slate-900 border border-cobalt-300/60 dark:border-cobalt-400/30 flex items-center justify-center p-2.5 shadow-xs">
+                  <img src="/logo.svg" alt="" width="34" height="27" class="w-full h-full object-contain" />
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="font-extrabold text-sm text-slate-800 dark:text-white">KRISTA CORE STACK</span>
+                    <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-coral-400/15 text-coral-700 dark:text-coral-300 border border-coral-400/30">
+                      LIVE
+                    </span>
+                  </div>
+                  <span class="text-xs text-cobalt-600 dark:text-cobalt-300 font-medium block mt-0.5">{{ nextMilestone.eraName }}</span>
+                </div>
+              </div>
+              <div class="text-right font-mono">
+                <span class="text-[11px] text-slate-500 dark:text-slate-400 block">{{ t('currentBlockLabel') }}</span>
+                <span class="text-xl font-extrabold text-cobalt-700 dark:text-cobalt-300">#{{ currentBlock.toLocaleString() }}</span>
+              </div>
+            </div>
+
+            <!-- 3-Layer Stack Visual inside Glass Card -->
+            <div class="p-6 sm:p-7 space-y-4">
+              <div class="text-xs font-mono font-bold uppercase tracking-wider text-cobalt-600 dark:text-cobalt-300 flex items-center justify-between">
+                <span>{{ locale === 'tr' ? 'Üç Katmanlı Kooperatif Mimari' : '3-Layer Cooperative Stack' }}</span>
+                <span class="text-coral-600 dark:text-coral-300">secp256k1</span>
+              </div>
+
+              <div class="space-y-3">
+                <!-- Layer 1 -->
+                <div class="tonal-panel p-4 rounded-2xl flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <span class="w-8 h-8 rounded-xl bg-[#7695CD]/20 border border-[#7695CD]/40 text-cobalt-700 dark:text-cobalt-200 font-mono text-xs font-extrabold flex items-center justify-center shrink-0">
+                      01
+                    </span>
+                    <div class="min-w-0">
+                      <span class="text-sm font-bold text-slate-800 dark:text-white block">ADAM Consensus Engine</span>
+                      <span class="text-xs text-slate-500 dark:text-slate-400 block truncate">VRF Rolling-Seed • 11 Miners + 1 Coordinator</span>
+                    </div>
+                  </div>
+                  <span class="text-[11px] font-mono font-bold px-2.5 py-1 rounded-lg bg-white/80 dark:bg-slate-800 text-cobalt-700 dark:text-cobalt-300 border border-cobalt-200/70 dark:border-slate-700 shrink-0">
+                    Block 200+
+                  </span>
+                </div>
+
+                <!-- Layer 2 -->
+                <div class="tonal-panel p-4 rounded-2xl flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <span class="w-8 h-8 rounded-xl bg-[#F5897C]/20 border border-[#F5897C]/40 text-coral-700 dark:text-coral-200 font-mono text-xs font-extrabold flex items-center justify-center shrink-0">
+                      02
+                    </span>
+                    <div class="min-w-0">
+                      <span class="text-sm font-bold text-slate-800 dark:text-white block">PoBLS Threshold Lottery</span>
+                      <span class="text-xs text-slate-500 dark:text-slate-400 block truncate">supranational/blst • Active LLMQ Quorum</span>
+                    </div>
+                  </div>
+                  <span class="text-[11px] font-mono font-bold px-2.5 py-1 rounded-lg bg-white/80 dark:bg-slate-800 text-coral-700 dark:text-coral-300 border border-coral-200/70 dark:border-slate-700 shrink-0">
+                    Block 2,000+
+                  </span>
+                </div>
+
+                <!-- Layer 3 -->
+                <div class="tonal-panel p-4 rounded-2xl flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <span class="w-8 h-8 rounded-xl bg-[#7695CD]/20 border border-[#7695CD]/40 text-cobalt-700 dark:text-cobalt-200 font-mono text-xs font-extrabold flex items-center justify-center shrink-0">
+                      03
+                    </span>
+                    <div class="min-w-0">
+                      <span class="text-sm font-bold text-slate-800 dark:text-white block">MESCAL Smart Contracts</span>
+                      <span class="text-xs text-slate-500 dark:text-slate-400 block truncate">Zero-Gas Sandbox • 1,000 KRISTA Coin-Lock</span>
+                    </div>
+                  </div>
+                  <span class="text-[11px] font-mono font-bold px-2.5 py-1 rounded-lg bg-white/80 dark:bg-slate-800 text-cobalt-700 dark:text-cobalt-300 border border-cobalt-200/70 dark:border-slate-700 shrink-0">
+                    Genesis+
+                  </span>
+                </div>
+              </div>
+
+              <!-- Next Milestone Progress Tracker -->
+              <div class="pt-4 border-t border-cobalt-200/50 dark:border-slate-800 space-y-2.5">
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-slate-500 dark:text-slate-400 font-semibold">{{ t('nextMilestoneLabel') }}:</span>
+                  <span class="font-mono font-bold text-cobalt-700 dark:text-cobalt-300">{{ nextMilestone.nextName }}</span>
+                </div>
+                <div class="w-full h-2.5 bg-cobalt-100/80 dark:bg-slate-800 rounded-full overflow-hidden p-0.5">
+                  <div
+                    class="h-full rounded-full brand-accent-bar transition-all duration-500"
+                    :style="{ width: `${nextMilestone.progress}%` }"
+                  ></div>
+                </div>
+                <div class="flex items-center justify-between text-[11px] font-mono text-slate-500 dark:text-slate-400">
+                  <span>Block #{{ currentBlock.toLocaleString() }}</span>
+                  <span v-if="nextMilestone.remaining > 0" class="text-coral-600 dark:text-coral-300 font-semibold">
+                    {{ locale === 'tr' ? `Hedefe ${nextMilestone.remaining.toLocaleString()} blok kaldı` : `${nextMilestone.remaining.toLocaleString()} blocks remaining` }}
+                  </span>
+                  <span v-else class="text-cobalt-700 dark:text-cobalt-300 font-bold">
+                    {{ locale === 'tr' ? 'Tamamlandı' : 'Activated' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Title / Tagline -->
-      <div class="max-w-4xl space-y-6">
-        <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-slate-800 leading-tight">
-          {{ t('heroTitle') }}
-        </h1>
-        <p class="text-slate-500 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
-          {{ t('heroSubtitle') }}
-        </p>
-      </div>
-
-      <!-- CTA Buttons -->
-      <div class="flex flex-col sm:flex-row items-center gap-4 mt-8">
-        <UButton
-          @click="scrollToSection('features')"
-          color="mint"
-          size="lg"
-          variant="solid"
-          class="px-8 py-3 text-sm font-semibold shadow-md shadow-mint-500/10 cursor-pointer text-white bg-mint-500 hover:bg-mint-600 border-none"
-        >
-          {{ t('getStarted') }}
-        </UButton>
-        <UButton
-          to="https://github.com/bedri/KristaTech-KRISTA/releases"
-          target="_blank"
-          color="slate"
-          size="lg"
-          variant="outline"
-          class="px-8 py-3 text-sm font-semibold cursor-pointer border-slate-300 text-slate-600 hover:bg-slate-50"
-          icon="i-heroicons-arrow-down-tray"
-        >
-          {{ t('downloadWallet') }}
-        </UButton>
-      </div>
-
-      <!-- Stat Badges Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full max-w-4xl mt-16">
-        <div class="glass-card rounded-2xl p-6 border border-slate-200/50 flex flex-col justify-center items-center shadow-sm relative overflow-hidden group">
-          <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-8 transition-opacity duration-300">
-            <UIcon name="i-heroicons-cpu-chip" class="w-20 h-20 text-mint-500" />
+      <!-- 4-Card Harmonious Telemetry Strip -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-14">
+        <!-- Metric 1 -->
+        <div class="protocol-card rounded-3xl p-6 relative overflow-hidden">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              {{ t('activeMasternodes') }}
+            </span>
+            <span class="w-9 h-9 rounded-xl bg-[#7695CD]/15 text-cobalt-600 dark:text-cobalt-300 flex items-center justify-center">
+              <svg aria-hidden="true" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M13 4.5a2.5 2.5 0 11.702 1.737L6.97 9.604a2.518 2.518 0 010 .792l6.733 3.367a2.5 2.5 0 11-.671 1.341l-6.733-3.367a2.5 2.5 0 110-3.475l6.733-3.366A2.52 2.52 0 0113 4.5z" />
+              </svg>
+            </span>
           </div>
-          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">{{ t('activeMasternodes') }}</span>
-          <span class="text-2xl font-extrabold text-slate-800 mt-1.5">{{ masternodesCount.toLocaleString() }}</span>
-          <span class="text-[10px] text-mint-600 font-semibold mt-1">With 2,100 KRISTA collateral</span>
+          <div class="text-3xl font-extrabold font-mono text-slate-800 dark:text-white">
+            {{ masternodesCount.toLocaleString() }}
+          </div>
+          <p class="text-xs text-cobalt-700 dark:text-cobalt-300 font-semibold mt-2">
+            {{ locale === 'tr' ? '2.100 KRISTA Teminat • %50 Model D Payı' : '2,100 KRISTA Collateral • 50% Model D Share' }}
+          </p>
         </div>
 
-        <div class="glass-card rounded-2xl p-6 border border-slate-200/50 flex flex-col justify-center items-center shadow-sm relative overflow-hidden group">
-          <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-8 transition-opacity duration-300">
-            <UIcon name="i-heroicons-banknotes" class="w-20 h-20 text-sky-blue-500" />
+        <!-- Metric 2 -->
+        <div class="protocol-card rounded-3xl p-6 relative overflow-hidden">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              {{ t('currentSupply') }}
+            </span>
+            <span class="w-9 h-9 rounded-xl bg-[#F5897C]/15 text-coral-600 dark:text-coral-300 flex items-center justify-center">
+              <svg aria-hidden="true" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M1 4a1 1 0 011-1h16a1 1 0 011 1v8a1 1 0 01-1 1H2a1 1 0 01-1-1V4zm12 4a3 3 0 11-6 0 3 3 0 016 0zM4 9a1 1 0 100-2 1 1 0 000 2zm13-1a1 1 0 11-2 0 1 1 0 012 0zM1.75 14.5a.75.75 0 000 1.5c4.417 0 8.693.603 12.749 1.73 1.111.309 2.251-.512 2.251-1.696v-.784a.75.75 0 00-1.5 0v.784a.272.272 0 01-.35.25A49.043 49.043 0 001.75 14.5z" clip-rule="evenodd" />
+              </svg>
+            </span>
           </div>
-          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">{{ t('currentSupply') }}</span>
-          <span class="text-2xl font-extrabold text-slate-800 mt-1.5">{{ circulatingSupply.toLocaleString() }}</span>
-          <span class="text-[10px] text-sky-blue-600 font-semibold mt-1">210M KRISTA Hard Cap</span>
+          <div class="text-3xl font-extrabold font-mono text-slate-800 dark:text-white">
+            {{ circulatingSupply.toLocaleString() }}
+          </div>
+          <p class="text-xs text-coral-600 dark:text-coral-300 font-semibold mt-2">
+            {{ locale === 'tr' ? '210M KRISTA Maks. Arz • 0 Premine' : '210M KRISTA Hard Cap • 0 Premine' }}
+          </p>
         </div>
 
-        <div class="glass-card rounded-2xl p-6 border border-slate-200/50 flex flex-col justify-center items-center shadow-sm relative overflow-hidden group">
-          <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-8 transition-opacity duration-300">
-            <UIcon name="i-heroicons-bolt" class="w-20 h-20 text-mint-500" />
+        <!-- Metric 3 -->
+        <div class="protocol-card rounded-3xl p-6 relative overflow-hidden">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              {{ t('networkTps') }}
+            </span>
+            <span class="w-9 h-9 rounded-xl bg-[#7695CD]/15 text-cobalt-600 dark:text-cobalt-300 flex items-center justify-center">
+              <svg aria-hidden="true" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
+              </svg>
+            </span>
           </div>
-          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">{{ t('networkTps') }}</span>
-          <span class="text-2xl font-extrabold text-slate-800 mt-1.5">2,500+</span>
-          <span class="text-[10px] text-mint-600 font-semibold mt-1">30s Block spacing</span>
+          <div class="text-3xl font-extrabold font-mono text-slate-800 dark:text-white">
+            2,500+ <span class="text-base font-bold text-slate-400">TPS</span>
+          </div>
+          <p class="text-xs text-cobalt-700 dark:text-cobalt-300 font-semibold mt-2">
+            {{ locale === 'tr' ? '30 Saniye Blok Süresi (2.880 Blok/Gün)' : '30s Block Spacing (2,880 Blocks/Day)' }}
+          </p>
+        </div>
+
+        <!-- Metric 4 -->
+        <div class="protocol-card rounded-3xl p-6 relative overflow-hidden">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              {{ t('cryptoSecurity') }}
+            </span>
+            <span class="w-9 h-9 rounded-xl bg-[#F5897C]/15 text-coral-600 dark:text-coral-300 flex items-center justify-center">
+              <svg aria-hidden="true" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 1.944A11.954 11.954 0 012.166 5C2.056 5.649 2 6.319 2 7c0 5.225 3.34 9.67 8 11.317C14.66 16.67 18 12.225 18 7c0-.682-.057-1.35-.166-2.001A11.954 11.954 0 0110 1.944zM11 14a1 1 0 11-2 0 1 1 0 012 0zm0-7a1 1 0 10-2 0v3a1 1 0 102 0V7z" clip-rule="evenodd" />
+              </svg>
+            </span>
+          </div>
+          <div class="text-3xl font-extrabold font-mono text-slate-800 dark:text-white">
+            13 <span class="text-base font-bold text-slate-400">ALGO + BLST</span>
+          </div>
+          <p class="text-xs text-coral-600 dark:text-coral-300 font-semibold mt-2">
+            {{ locale === 'tr' ? 'X11KVS + VRF + secp256k1 Eşik İmzası' : 'X11KVS + VRF + secp256k1 Threshold Sig' }}
+          </p>
         </div>
       </div>
     </section>
 
-    <!-- Features Section -->
+    <!-- 2. CORE PROTOCOL ARCHITECTURE & WORKBENCH (#features) -->
     <section id="features" class="scroll-mt-24 space-y-12">
-      <div class="text-center space-y-3">
-        <h2 class="text-3xl font-extrabold text-slate-800 tracking-tight">
+      <div class="max-w-3xl mx-auto text-center space-y-3">
+        <span class="inline-block text-xs font-mono font-bold uppercase tracking-widest px-3.5 py-1 rounded-full bg-cobalt-400/15 text-cobalt-700 dark:text-cobalt-300 border border-cobalt-400/30">
+          01 / CORE ARCHITECTURE
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-800 dark:text-white tracking-tight">
           {{ t('featuresTitle') }}
         </h2>
-        <p class="text-slate-500 text-sm sm:text-base max-w-2xl mx-auto">
+        <p class="text-slate-600 dark:text-slate-300 text-base leading-relaxed">
           {{ t('featuresSubtitle') }}
         </p>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 px-4">
-        <!-- Feature 1: ADAM -->
-        <div class="glass-card rounded-2xl p-8 border border-slate-200/50 flex flex-col justify-between shadow-sm relative overflow-hidden">
-          <div class="space-y-4">
-            <div class="w-11 h-11 rounded-xl bg-mint-500/10 flex items-center justify-center text-mint-600 mb-5">
-              <UIcon name="i-heroicons-cpu-chip" class="w-5.5 h-5.5" />
+      <!-- Subgrid 3-Column Feature Cards (with harmonious tonal sub-panels) -->
+      <div class="feature-cards-grid">
+        <!-- Pillar 1: ADAM Consensus -->
+        <article class="feature-subgrid-card protocol-card rounded-3xl p-7 sm:p-8 relative overflow-hidden">
+          <!-- Row 1: Header -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between gap-2">
+              <div class="w-12 h-12 rounded-2xl bg-[#7695CD]/15 border border-[#7695CD]/35 flex items-center justify-center text-cobalt-600 dark:text-cobalt-300">
+                <svg aria-hidden="true" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                </svg>
+              </div>
+              <span class="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-cobalt-400/15 text-cobalt-700 dark:text-cobalt-300 border border-cobalt-400/30">
+                {{ t('adamBadge') }}
+              </span>
             </div>
-            <h3 class="text-lg font-bold text-slate-800 tracking-wide">{{ t('adamTitle') }}</h3>
-            <p class="text-slate-500 text-xs sm:text-sm leading-relaxed">
+            <h3 class="text-xl font-extrabold text-slate-800 dark:text-white">
+              {{ t('adamTitle') }}
+            </h3>
+          </div>
+
+          <!-- Row 2: Description & Algorithm Tags -->
+          <div class="space-y-4 my-5">
+            <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
               {{ t('adamDesc') }}
             </p>
-          </div>
-
-          <!-- Interactive Sim -->
-          <div class="mt-8 border border-slate-200/40 bg-slate-50/50 rounded-xl p-4 flex flex-col justify-center min-h-[140px]">
-            <div class="flex flex-col gap-2">
-              <div class="flex justify-between items-center text-[10px]">
-                <span class="text-slate-400 font-bold uppercase tracking-wider">ADAM Engine Sim</span>
-                <span 
-                  class="px-2 py-0.5 rounded text-[8px] font-bold"
-                  :class="isSimulatingConsensus ? 'bg-mint-500/10 text-mint-600 animate-pulse' : 'bg-slate-200/60 text-slate-500'"
-                >
-                  {{ isSimulatingConsensus ? 'Running' : 'Idle' }}
-                </span>
-              </div>
-
-              <!-- Console Simulation Output -->
-              <div class="bg-white rounded p-2.5 min-h-[50px] flex items-center text-[11px] font-mono border border-slate-200/50 mt-1 shadow-inner">
-                <span v-if="consensusStep >= 0" class="text-mint-600">
-                  ⚡ {{ consensusSteps[consensusStep] }}
-                </span>
-                <span v-else class="text-slate-400">Click button to run consensus loop...</span>
-              </div>
-
-              <UButton
-                @click="startConsensusSim"
-                color="mint"
-                variant="soft"
-                size="xs"
-                block
-                :loading="isSimulatingConsensus"
-                class="mt-1 font-semibold cursor-pointer text-mint-700 bg-mint-500/10 hover:bg-mint-500/20"
-              >
-                Simulate Block Proposal
-              </UButton>
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-cobalt-50 dark:bg-slate-800 text-cobalt-800 dark:text-slate-300 border border-cobalt-200/60 dark:border-slate-700">X11KVS</span>
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-cobalt-50 dark:bg-slate-800 text-cobalt-800 dark:text-slate-300 border border-cobalt-200/60 dark:border-slate-700">Hamsi</span>
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-cobalt-50 dark:bg-slate-800 text-cobalt-800 dark:text-slate-300 border border-cobalt-200/60 dark:border-slate-700">Fugue</span>
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-cobalt-50 dark:bg-slate-800 text-cobalt-800 dark:text-slate-300 border border-cobalt-200/60 dark:border-slate-700">Shabal</span>
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-cobalt-50 dark:bg-slate-800 text-cobalt-800 dark:text-slate-300 border border-cobalt-200/60 dark:border-slate-700">Haval-256</span>
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-coral-400/15 text-coral-700 dark:text-coral-300 font-semibold">+8 Dynamic</span>
             </div>
           </div>
-        </div>
 
-        <!-- Feature 2: PoBLS -->
-        <div class="glass-card rounded-2xl p-8 border border-slate-200/50 flex flex-col justify-between shadow-sm relative overflow-hidden">
-          <div class="space-y-4">
-            <div class="w-11 h-11 rounded-xl bg-sky-blue-500/10 flex items-center justify-center text-sky-blue-600 mb-5">
-              <UIcon name="i-heroicons-shield-check" class="w-5.5 h-5.5" />
+          <!-- Row 3: Harmonious Interactive Simulator -->
+          <div class="tonal-panel rounded-2xl p-4 flex flex-col justify-between gap-3">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-mono font-bold text-cobalt-700 dark:text-cobalt-300 uppercase tracking-wider">ADAM Round Sim</span>
+              <div class="flex items-center gap-1.5">
+                <span
+                  v-for="stepIdx in 5"
+                  :key="stepIdx"
+                  class="w-2 h-2 rounded-full transition-colors"
+                  :class="consensusStep >= stepIdx - 1 ? 'bg-[#F5897C]' : 'bg-cobalt-200 dark:bg-slate-700'"
+                ></span>
+              </div>
             </div>
-            <h3 class="text-lg font-bold text-slate-800 tracking-wide">{{ t('poblsTitle') }}</h3>
-            <p class="text-slate-500 text-xs sm:text-sm leading-relaxed">
+
+            <div class="bg-white/90 dark:bg-slate-900/90 rounded-xl p-3 min-h-[60px] flex items-center text-xs font-mono border border-cobalt-200/70 dark:border-slate-800">
+              <span v-if="consensusStep >= 0" class="text-cobalt-700 dark:text-coral-300 font-semibold">
+                &gt; {{ consensusSteps[consensusStep] }}
+              </span>
+              <span v-else class="text-slate-500 dark:text-slate-400">
+                {{ locale === 'tr' ? '> VRF komite simülasyonunu başlatmak için tıklayın...' : '> Click below to simulate a VRF consensus round...' }}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              @click="startConsensusSim"
+              :disabled="isSimulatingConsensus"
+              class="btn-brand-primary w-full py-2.5 px-4 rounded-xl text-xs font-bold disabled:opacity-60 cursor-pointer"
+            >
+              {{ isSimulatingConsensus
+                ? (locale === 'tr' ? 'Komite Turu Yürütülüyor...' : 'Simulating Round...')
+                : (locale === 'tr' ? 'Blok Önerisini Simüle Et' : 'Simulate Block Proposal') }}
+            </button>
+          </div>
+        </article>
+
+        <!-- Pillar 2: Proof of BLS (PoBLS) -->
+        <article class="feature-subgrid-card protocol-card rounded-3xl p-7 sm:p-8 relative overflow-hidden">
+          <!-- Row 1: Header -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between gap-2">
+              <div class="w-12 h-12 rounded-2xl bg-[#F5897C]/15 border border-[#F5897C]/35 flex items-center justify-center text-coral-600 dark:text-coral-300">
+                <svg aria-hidden="true" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <span class="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-coral-400/15 text-coral-700 dark:text-coral-300 border border-coral-400/30">
+                {{ t('poblsBadge') }}
+              </span>
+            </div>
+            <h3 class="text-xl font-extrabold text-slate-800 dark:text-white">
+              {{ t('poblsTitle') }}
+            </h3>
+          </div>
+
+          <!-- Row 2: Description & Tags -->
+          <div class="space-y-4 my-5">
+            <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
               {{ t('poblsDesc') }}
             </p>
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-cobalt-50 dark:bg-slate-800 text-cobalt-800 dark:text-slate-300 border border-cobalt-200/60 dark:border-slate-700">supranational/blst</span>
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-cobalt-50 dark:bg-slate-800 text-cobalt-800 dark:text-slate-300 border border-cobalt-200/60 dark:border-slate-700">secp256k1</span>
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-coral-400/15 text-coral-700 dark:text-coral-300 font-semibold">LLMQ Quorum</span>
+            </div>
           </div>
 
-          <!-- Interactive Sim -->
-          <div class="mt-8 border border-slate-200/40 bg-slate-50/50 rounded-xl p-4 flex flex-col justify-center min-h-[140px]">
-            <div class="flex flex-col gap-2">
-              <div class="flex justify-between items-center text-[10px]">
-                <span class="text-slate-400 font-bold uppercase tracking-wider">BLS Signature Lottery</span>
-                <span 
-                  class="px-2 py-0.5 rounded text-[8px] font-bold"
-                  :class="isLotteryRunning ? 'bg-sky-blue-500/10 text-sky-blue-600 animate-pulse' : 'bg-slate-200/60 text-slate-500'"
-                >
-                  {{ isLotteryRunning ? 'Drawing' : 'Ready' }}
-                </span>
-              </div>
-
-              <!-- Lottery Output -->
-              <div class="bg-white rounded p-2 flex flex-col gap-1 border border-slate-200/50 mt-1 min-h-[50px] justify-center shadow-inner">
-                <div v-if="selectedCommittee.length" class="flex flex-wrap gap-1.5 justify-center">
-                  <span 
-                    v-for="node in selectedCommittee" 
-                    :key="node" 
-                    class="text-[9px] font-mono px-2 py-0.5 rounded bg-sky-blue-500/10 border border-sky-blue-500/20 text-sky-blue-600"
-                  >
-                    {{ node }}
-                  </span>
-                </div>
-                <span v-else class="text-[11px] text-slate-400 text-center font-mono">Run committee lottery draw...</span>
-              </div>
-
-              <UButton
-                @click="runLottery"
-                color="sky-blue"
-                variant="soft"
-                size="xs"
-                block
-                :loading="isLotteryRunning"
-                class="mt-1 font-semibold cursor-pointer text-sky-blue-700 bg-sky-blue-500/10 hover:bg-sky-blue-500/20 border-none"
-              >
-                Run Lottery Draw
-              </UButton>
+          <!-- Row 3: Harmonious Interactive Simulator -->
+          <div class="tonal-panel rounded-2xl p-4 flex flex-col justify-between gap-3">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-mono font-bold text-coral-700 dark:text-coral-300 uppercase tracking-wider">BLS Threshold Lottery</span>
+              <span class="font-mono text-[11px] px-2 py-0.5 rounded-md bg-white/80 dark:bg-slate-800 text-cobalt-700 dark:text-cobalt-300 border border-cobalt-200/60 dark:border-slate-700">
+                {{ isLotteryRunning ? (locale === 'tr' ? 'Çekiliyor...' : 'Drawing...') : 'Quorum Ready' }}
+              </span>
             </div>
+
+            <div class="bg-white/90 dark:bg-slate-900/90 rounded-xl p-3 min-h-[60px] flex flex-wrap items-center justify-center gap-1.5 border border-cobalt-200/70 dark:border-slate-800">
+              <span
+                v-for="node in selectedCommittee"
+                :key="node"
+                class="text-xs font-mono font-semibold px-2.5 py-1 rounded-lg bg-cobalt-400/15 border border-cobalt-400/35 text-cobalt-800 dark:text-cobalt-200"
+              >
+                {{ node }}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              @click="runLottery"
+              :disabled="isLotteryRunning"
+              class="btn-brand-primary w-full py-2.5 px-4 rounded-xl text-xs font-bold disabled:opacity-60 cursor-pointer"
+            >
+              {{ locale === 'tr' ? 'Kriptografik Çekilişi Çalıştır' : 'Run BLS Committee Lottery' }}
+            </button>
+          </div>
+        </article>
+
+        <!-- Pillar 3: MESCAL Smart Contracts -->
+        <article class="feature-subgrid-card protocol-card rounded-3xl p-7 sm:p-8 relative overflow-hidden">
+          <!-- Row 1: Header -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between gap-2">
+              <div class="w-12 h-12 rounded-2xl bg-[#7695CD]/15 border border-[#7695CD]/35 flex items-center justify-center text-cobalt-600 dark:text-cobalt-300">
+                <svg aria-hidden="true" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                </svg>
+              </div>
+              <span class="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-cobalt-400/15 text-cobalt-700 dark:text-cobalt-300 border border-cobalt-400/30">
+                {{ t('mescalBadge') }}
+              </span>
+            </div>
+            <h3 class="text-xl font-extrabold text-slate-800 dark:text-white">
+              {{ t('mescalTitle') }}
+            </h3>
+          </div>
+
+          <!-- Row 2: Description & Tags -->
+          <div class="space-y-4 my-5">
+            <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+              {{ t('mescalDesc') }}
+            </p>
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-coral-400/15 text-coral-700 dark:text-coral-300 font-semibold">1,000 KRISTA Coin-Lock</span>
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-cobalt-50 dark:bg-slate-800 text-cobalt-800 dark:text-slate-300 border border-cobalt-200/60 dark:border-slate-700">2,880 Blocks</span>
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-cobalt-50 dark:bg-slate-800 text-cobalt-800 dark:text-slate-300 border border-cobalt-200/60 dark:border-slate-700">Escrow &amp; Vesting</span>
+            </div>
+          </div>
+
+          <!-- Row 3: Harmonious Interactive MESCAL Studio -->
+          <div class="tonal-panel rounded-2xl p-4 flex flex-col justify-between gap-2.5">
+            <div class="flex items-center justify-between gap-2">
+              <label for="mescal-template-select" class="text-xs font-mono font-bold text-cobalt-700 dark:text-cobalt-300 uppercase">
+                MESCAL VM
+              </label>
+              <div class="flex items-center gap-2">
+                <select
+                  id="mescal-template-select"
+                  v-model="mescalTemplate"
+                  class="bg-white dark:bg-slate-900 border border-cobalt-200/80 dark:border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-700 dark:text-slate-200 font-mono"
+                >
+                  <option value="escrow">Coin-Lock (1,000 KRISTA)</option>
+                  <option value="vesting">Linear Vesting</option>
+                  <option value="token">Asset Minting</option>
+                </select>
+                <button
+                  type="button"
+                  @click="copyMescalBytecode"
+                  class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-cobalt-200/80 dark:border-slate-700 hover:border-coral-400 text-[11px] font-mono font-semibold text-coral-600 dark:text-coral-300 cursor-pointer"
+                >
+                  {{ copiedBytecode ? (locale === 'tr' ? 'Kopyalandı' : 'Copied') : (locale === 'tr' ? 'Kopyala' : 'Copy') }}
+                </button>
+              </div>
+            </div>
+
+            <div v-if="mescalTemplate === 'escrow'" class="grid grid-cols-2 gap-2 text-xs">
+              <label for="mescal-collateral-input" class="flex flex-col text-slate-500 dark:text-slate-400 font-mono">
+                <span>Collateral (KRISTA)</span>
+                <input
+                  id="mescal-collateral-input"
+                  type="number"
+                  v-model="mescalParams.amount"
+                  class="bg-white dark:bg-slate-900 border border-cobalt-200/80 dark:border-slate-700 rounded-lg px-2.5 py-1 mt-1 text-slate-800 dark:text-white font-mono text-xs font-semibold"
+                />
+              </label>
+              <label for="mescal-locktime-input" class="flex flex-col text-slate-500 dark:text-slate-400 font-mono">
+                <span>Locktime (Blocks)</span>
+                <input
+                  id="mescal-locktime-input"
+                  type="number"
+                  v-model="mescalParams.locktime"
+                  class="bg-white dark:bg-slate-900 border border-cobalt-200/80 dark:border-slate-700 rounded-lg px-2.5 py-1 mt-1 text-slate-800 dark:text-white font-mono text-xs font-semibold"
+                />
+              </label>
+            </div>
+
+            <pre
+              tabindex="0"
+              class="bg-white/90 dark:bg-slate-900/90 rounded-xl p-2.5 text-xs font-mono border border-cobalt-200/70 dark:border-slate-800 overflow-x-auto text-cobalt-800 dark:text-cobalt-200 max-h-[88px] leading-relaxed"
+            ><code>{{ mescalBytecode }}</code></pre>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- 3. PROTOCOL SPECIFICATIONS & NODE PARTICIPATION TIERS (#specs) -->
+    <section id="specs" class="scroll-mt-24 space-y-12">
+      <div class="max-w-3xl mx-auto text-center space-y-3">
+        <span class="inline-block text-xs font-mono font-bold uppercase tracking-widest px-3.5 py-1 rounded-full bg-coral-400/15 text-coral-700 dark:text-coral-300 border border-coral-400/30">
+          02 / TECHNICAL SPECIFICATIONS
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-800 dark:text-white tracking-tight">
+          {{ t('specsTitle') }}
+        </h2>
+        <p class="text-slate-600 dark:text-slate-300 text-base leading-relaxed">
+          {{ t('specsSubtitle') }}
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+        <!-- Left: Deterministic Chain Parameters -->
+        <div class="lg:col-span-6 protocol-card rounded-3xl p-7 sm:p-8 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between gap-3 pb-5 border-b border-cobalt-200/60 dark:border-slate-800">
+              <h3 class="text-xl font-extrabold text-slate-800 dark:text-white">
+                {{ t('chainParamsTitle') }}
+              </h3>
+              <span class="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-cobalt-400/15 text-cobalt-700 dark:text-cobalt-300">
+                MAINNET
+              </span>
+            </div>
+
+            <ul class="spec-list mt-2">
+              <li
+                v-for="spec in chainSpecs"
+                :key="spec.label"
+                class="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-sm"
+              >
+                <span class="text-slate-500 dark:text-slate-400 font-medium">{{ spec.label }}</span>
+                <span class="font-mono font-bold text-slate-800 dark:text-white sm:text-right">{{ spec.value }}</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="mt-6 p-4 rounded-2xl tonal-panel flex items-center justify-between gap-4">
+            <div class="text-xs text-slate-600 dark:text-slate-300">
+              <strong class="block text-cobalt-800 dark:text-cobalt-200 mb-0.5">
+                {{ locale === 'tr' ? 'Açık Kaynak Doğrulama' : 'Open-Source Verification' }}
+              </strong>
+              <span>
+                {{ locale === 'tr'
+                  ? 'Tüm konsensüs kuralları C++ çekirdek kaynak kodunda açıkça denetlenebilir.'
+                  : 'All consensus parameters are deterministically enforced in the C++ Core daemon.' }}
+              </span>
+            </div>
+            <a
+              href="https://github.com/bedri/KristaTech-KRISTA"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn-brand-primary shrink-0 px-4 py-2 rounded-xl text-xs font-bold"
+            >
+              GitHub
+            </a>
           </div>
         </div>
 
-        <!-- Feature 3: MESCAL -->
-        <div class="glass-card rounded-2xl p-8 border border-slate-200/50 flex flex-col justify-between shadow-sm relative overflow-hidden">
-          <div class="space-y-4">
-            <div class="w-11 h-11 rounded-xl bg-mint-500/10 flex items-center justify-center text-mint-600 mb-5">
-              <UIcon name="i-heroicons-code-bracket-square" class="w-5.5 h-5.5" />
-            </div>
-            <h3 class="text-lg font-bold text-slate-800 tracking-wide">{{ t('mescalTitle') }}</h3>
-            <p class="text-slate-500 text-xs sm:text-sm leading-relaxed">
-              {{ t('mescalDesc') }}
-            </p>
+        <!-- Right: Network Participation & Collateral Tiers -->
+        <div class="lg:col-span-6 protocol-card rounded-3xl p-7 sm:p-8 flex flex-col justify-between space-y-6">
+          <div class="flex items-center justify-between gap-3 pb-5 border-b border-cobalt-200/60 dark:border-slate-800">
+            <h3 class="text-xl font-extrabold text-slate-800 dark:text-white">
+              {{ t('nodeTiersTitle') }}
+            </h3>
+            <span class="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-coral-400/15 text-coral-700 dark:text-coral-300">
+              MODEL D ROLES
+            </span>
           </div>
 
-          <!-- Interactive Sim -->
-          <div class="mt-8 border border-slate-200/40 bg-slate-50/50 rounded-xl p-4 flex flex-col justify-center min-h-[140px]">
-            <div class="flex flex-col gap-2">
-              <div class="flex items-center justify-between text-[10px] mb-0.5">
-                <span class="text-slate-400 font-bold uppercase tracking-wider">MESCAL Template</span>
-                <select 
-                  v-model="mescalTemplate" 
-                  class="bg-white border border-slate-200 rounded px-1.5 py-0.5 text-[10px] text-slate-600 focus:outline-none"
-                >
-                  <option value="escrow">Coin-Lock Registration</option>
-                  <option value="vesting">Vesting Schedule</option>
-                  <option value="token">Asset Minting</option>
-                </select>
+          <div class="space-y-4 flex-1 flex flex-col justify-center">
+            <!-- Tier 1: Masternode -->
+            <div class="tonal-panel p-5 rounded-2xl border-l-4 border-l-[#7695CD] space-y-2">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <span class="font-extrabold text-base text-slate-800 dark:text-white">
+                  {{ locale === 'tr' ? '1. Masternode Operatörü' : '1. Masternode Operator' }}
+                </span>
+                <span class="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-white/85 dark:bg-slate-900 text-cobalt-700 dark:text-cobalt-300 border border-cobalt-200/70 dark:border-slate-700">
+                  2,100 KRISTA {{ locale === 'tr' ? 'Teminat' : 'Collateral' }}
+                </span>
               </div>
+              <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+                {{ locale === 'tr'
+                  ? 'Ağ yönetişimi, LLMQ quorum imzaları ve hızlı doğrulama hizmetlerini yürütür. Model D kapsamında kalan ödül havuzunun %50 pasif + %10 aktif quorum payını alır.'
+                  : 'Provides LLMQ quorum verification and network stability. Receives 50% Passive Payee share plus 10% Active LLMQ Quorum share under Model D.' }}
+              </p>
+            </div>
 
-              <!-- Parameter Toggles (Escrow Only for Demo simplicity) -->
-              <div v-if="mescalTemplate === 'escrow'" class="grid grid-cols-2 gap-2 text-[9px] text-slate-500">
-                <label class="flex flex-col">
-                  Collateral (KRISTA)
-                  <input type="number" v-model="mescalParams.amount" class="bg-white border border-slate-200 rounded px-1 mt-0.5 text-slate-700 focus:outline-none" />
-                </label>
-                <label class="flex flex-col">
-                  Locktime (Blocks)
-                  <input type="number" v-model="mescalParams.locktime" class="bg-white border border-slate-200 rounded px-1 mt-0.5 text-slate-700 focus:outline-none" />
-                </label>
+            <!-- Tier 2: Coin-Lock Registered Miner -->
+            <div class="tonal-panel p-5 rounded-2xl border-l-4 border-l-[#F5897C] space-y-2">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <span class="font-extrabold text-base text-slate-800 dark:text-white">
+                  {{ locale === 'tr' ? '2. Kayıtlı Madenci (Coin-Lock)' : '2. Registered Miner (Coin-Lock)' }}
+                </span>
+                <span class="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-white/85 dark:bg-slate-900 text-coral-600 dark:text-coral-300 border border-coral-200/70 dark:border-slate-700">
+                  1,000 KRISTA • 2,880 {{ locale === 'tr' ? 'Blok' : 'Blocks' }}
+                </span>
               </div>
+              <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+                {{ locale === 'tr'
+                  ? 'MESCAL cüzdan sözleşmesiyle 1.000 KRISTA teminatını 2.880 blok (~1 gün) kilitleyerek ADAM komite seçimlerine ve %25 Aday Doğrulayıcı + %15 Blok Üreticisi havuzuna katılır.'
+                  : 'Locks 1,000 KRISTA for 2,880 blocks (~1 day) via native MESCAL Coin-Lock contract to qualify for ADAM rounds, earning from the 25% Validator Set and 15% Block Producer splits.' }}
+              </p>
+            </div>
 
-              <!-- Bytecode Output -->
-              <pre class="bg-white rounded p-2 text-[8px] font-mono border border-slate-200/50 overflow-x-auto text-mint-600 max-h-[70px] leading-tight mt-0.5 shadow-inner">{{ mescalBytecode }}</pre>
+            <!-- Tier 3: PoS Staker & Validator -->
+            <div class="tonal-panel p-5 rounded-2xl border-l-4 border-l-cobalt-600 space-y-2">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <span class="font-extrabold text-base text-slate-800 dark:text-white">
+                  {{ locale === 'tr' ? '3. PoS Staker ve Doğrulayıcı' : '3. PoS Staker & Validator' }}
+                </span>
+                <span class="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-white/85 dark:bg-slate-900 text-cobalt-700 dark:text-cobalt-300 border border-cobalt-200/70 dark:border-slate-700">
+                  {{ locale === 'tr' ? 'Blok 200+ Aktif' : 'Active Block 200+' }}
+                </span>
+              </div>
+              <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+                {{ locale === 'tr'
+                  ? '200. bloktan itibaren enerji verimli Hisse Kanıtı (PoS) ve PoBLS eşik çekilişleriyle blok üretimine ve zincir güvenliğine doğrudan katkıda bulunur.'
+                  : 'Participates in energy-efficient Proof of Stake (PoS) block production and PoBLS committee verification starting at Block 200.' }}
+              </p>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Tokenomics Section -->
+    <!-- 4. MODEL D TOKENOMICS & REWARD SIMULATOR (#tokenomics) -->
     <section id="tokenomics" class="scroll-mt-24 space-y-12">
-      <div class="text-center space-y-3">
-        <h2 class="text-3xl font-extrabold text-slate-800 tracking-tight">
+      <div class="max-w-3xl mx-auto text-center space-y-3">
+        <span class="inline-block text-xs font-mono font-bold uppercase tracking-widest px-3.5 py-1 rounded-full bg-cobalt-400/15 text-cobalt-700 dark:text-cobalt-300 border border-cobalt-400/30">
+          03 / MODEL D CRYPTOECONOMICS
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-800 dark:text-white tracking-tight">
           {{ t('tokenomicsTitle') }}
         </h2>
-        <p class="text-slate-500 text-sm sm:text-base max-w-2xl mx-auto">
+        <p class="text-slate-600 dark:text-slate-300 text-base leading-relaxed">
           {{ t('tokenomicsSubtitle') }}
         </p>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 px-4 items-start">
-        <!-- Tokenomics Detail Card -->
-        <div class="lg:col-span-5 glass-card rounded-2xl p-8 border border-slate-200/50 space-y-6 shadow-sm">
-          <h3 class="text-lg font-bold text-slate-800 tracking-wide">
-            <span v-if="locale === 'tr'">Emisyon Parametreleri</span>
-            <span v-else>Emission Parameters</span>
-          </h3>
-          <p class="text-slate-500 text-xs sm:text-sm leading-relaxed">
-            <span v-if="locale === 'tr'">
-              KRISTA, 210M tokenlik bir maksimum arz limiti ve 3 ayda bir %1.9 azalma (decay) oranı sunan sürdürülebilir bir emisyon protokolü uygulayarak öngörülebilir bir arz eğrisi sağlar.
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <!-- Left Column: Monetary Policy Card -->
+        <div class="lg:col-span-5 protocol-card rounded-3xl p-7 sm:p-8 space-y-6">
+          <div class="space-y-2">
+            <span class="text-xs font-mono font-bold text-coral-600 dark:text-coral-300 uppercase tracking-wider">
+              {{ locale === 'tr' ? 'Para Politikası ve Arz Disiplini' : 'Monetary Policy & Supply Discipline' }}
             </span>
-            <span v-else>
-              KRISTA implements a sustainable token emission protocol featuring a hard cap of 210M tokens and a quarterly 1.9% decay rate, providing a highly predictable supply curve.
-            </span>
-          </p>
-
-          <div class="space-y-4 pt-4 border-t border-slate-200/50">
-            <div class="flex items-center justify-between text-xs sm:text-sm">
-              <span class="text-slate-400">
-                <span v-if="locale === 'tr'">Maksimum Arz:</span>
-                <span v-else>Hard Cap:</span>
-              </span>
-              <span class="font-bold text-slate-700">210,000,000 KRISTA</span>
-            </div>
-            <div class="flex items-center justify-between text-xs sm:text-sm">
-              <span class="text-slate-400">
-                <span v-if="locale === 'tr'">Azalma Oranı:</span>
-                <span v-else>Decay Rate:</span>
-              </span>
-              <span class="font-bold text-mint-600">
-                <span v-if="locale === 'tr'">Her 90 Günde Bir %1.9</span>
-                <span v-else>1.9% Quarterly (90 Days)</span>
-              </span>
-            </div>
-            <div class="flex items-center justify-between text-xs sm:text-sm">
-              <span class="text-slate-400">
-                <span v-if="locale === 'tr'">Başlangıç Blok Ödülü (10.000. Blok):</span>
-                <span v-else>Initial Block Reward (Block 10,000):</span>
-              </span>
-              <span class="font-bold text-slate-700">15.0 KRISTA</span>
-            </div>
-            <div class="flex items-center justify-between text-xs sm:text-sm">
-              <span class="text-slate-400">
-                <span v-if="locale === 'tr'">Ön Madencilik (Premine):</span>
-                <span v-else>Premine Allocation:</span>
-              </span>
-              <span class="font-bold text-slate-700">0 KRISTA (No Premine)</span>
-            </div>
+            <h3 class="text-2xl font-extrabold text-slate-800 dark:text-white">
+              {{ locale === 'tr' ? 'Emisyon Parametreleri' : 'Emission Parameters' }}
+            </h3>
+            <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+              {{ locale === 'tr'
+                ? 'KRISTA, 210 Milyon maksimum arz sınırı ve 10.000. bloktan itibaren her 259.200 blokta (~90 gün) %1.9 geometrik azalma uygulayan öngörülebilir bir emisyon modeline sahiptir.'
+                : 'KRISTA enforces a strict 210M maximum supply cap with a predictable 1.9% geometric decay every 259,200 blocks (~90 days) starting at Block 10,000.' }}
+            </p>
           </div>
 
-          <div class="p-4 bg-mint-500/5 rounded-xl border border-mint-500/10 flex items-start gap-3">
-            <UIcon name="i-heroicons-information-circle" class="w-5 h-5 text-mint-600 shrink-0 mt-0.5" />
-            <p class="text-[11px] text-mint-700 leading-relaxed">
-              <span v-if="locale === 'tr'">
-                Blok ödülü azalması her 259.200 blokta bir (~90 gün) gerçekleşir. Geliştirici Fonu (%7) ve Başlangıç Musluğu (%0.7) kesintileri protokol seviyesinde zorunludur.
-              </span>
-              <span v-else>
-                Block reward decay occurs every 259,200 blocks (~90 days). The Developer Fund (7%) and Faucet (0.7%) splits are enforced at the protocol level.
-              </span>
+          <dl class="space-y-3.5 pt-4 border-t border-cobalt-200/60 dark:border-slate-800 text-sm">
+            <div class="flex items-center justify-between">
+              <dt class="text-slate-500 dark:text-slate-400">{{ locale === 'tr' ? 'Maksimum Arz (Hard Cap):' : 'Maximum Supply (Hard Cap):' }}</dt>
+              <dd class="font-mono font-extrabold text-slate-800 dark:text-white">210,000,000 KRISTA</dd>
+            </div>
+            <div class="flex items-center justify-between">
+              <dt class="text-slate-500 dark:text-slate-400">{{ locale === 'tr' ? 'Ön Madencilik (Premine):' : 'Premine Allocation:' }}</dt>
+              <dd class="font-mono font-bold text-coral-600 dark:text-coral-300">0 KRISTA (No Premine)</dd>
+            </div>
+            <div class="flex items-center justify-between">
+              <dt class="text-slate-500 dark:text-slate-400">{{ locale === 'tr' ? 'Başlangıç Ödülü (Blok 2–9.999):' : 'Bootstrap Subsidy (Blocks 2–9,999):' }}</dt>
+              <dd class="font-mono font-bold text-slate-800 dark:text-white">100.0 KRISTA</dd>
+            </div>
+            <div class="flex items-center justify-between">
+              <dt class="text-slate-500 dark:text-slate-400">{{ locale === 'tr' ? 'Standart Ödül (Blok 10.000+):' : 'Standard Subsidy (Block 10,000+):' }}</dt>
+              <dd class="font-mono font-bold text-slate-800 dark:text-white">15.0 KRISTA</dd>
+            </div>
+            <div class="flex items-center justify-between">
+              <dt class="text-slate-500 dark:text-slate-400">{{ locale === 'tr' ? 'Çeyreklik Azalma Oranı:' : 'Quarterly Decay Rate:' }}</dt>
+              <dd class="font-mono font-bold text-cobalt-700 dark:text-cobalt-300">
+                {{ locale === 'tr' ? '90 Günde Bir %1.9' : '1.9% Every 90 Days' }}
+              </dd>
+            </div>
+          </dl>
+
+          <div class="p-4 rounded-2xl tonal-panel space-y-1.5">
+            <div class="text-xs font-bold text-cobalt-800 dark:text-cobalt-200 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-[#F5897C]"></span>
+              <span>{{ locale === 'tr' ? 'Protokol Seviyesi Kesintiler' : 'Protocol-Level Allocations' }}</span>
+            </div>
+            <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+              {{ locale === 'tr'
+                ? 'Geliştirici Hazine Fonu (%7.0) ve Başlangıç Musluğu (50.000. bloğa kadar %0.7) ayrıldıktan sonra kalan %92.3 (veya %93) ödül havuzu Model D oranlarıyla (%50 / %25 / %15 / %10) dağıtılır.'
+                : 'After the mandatory Developer Fund (7.0%) and Bootstrap Faucet (0.7% until block 50,000), the remaining 92.3% (or 93.0%) pool is split 50% / 25% / 15% / 10% via Model D.' }}
             </p>
           </div>
         </div>
 
-        <!-- Interactive Calculator Card -->
-        <div class="lg:col-span-7 glass-card rounded-2xl p-8 border border-slate-200/50 space-y-6 shadow-sm">
-          <div class="flex items-center gap-3">
-            <div class="p-2.5 bg-mint-500/10 rounded-lg text-mint-600">
-              <UIcon name="i-heroicons-calculator" class="w-5 h-5" />
-            </div>
+        <!-- Right Column: Interactive Block Reward & Split Simulator -->
+        <div class="lg:col-span-7 protocol-card rounded-3xl p-7 sm:p-8 space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-cobalt-200/60 dark:border-slate-800">
             <div>
-              <h3 class="text-lg font-bold text-slate-800 tracking-wide">{{ t('calculatorTitle') }}</h3>
-              <p class="text-xs text-slate-400">{{ t('calculatorDesc') }}</p>
+              <h3 class="text-xl font-extrabold text-slate-800 dark:text-white">
+                {{ t('calculatorTitle') }}
+              </h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                {{ t('calculatorDesc') }}
+              </p>
+            </div>
+            <span class="text-xs font-mono font-bold px-3 py-1 rounded-full bg-cobalt-400/15 text-cobalt-700 dark:text-cobalt-300 shrink-0 self-start sm:self-center">
+              {{ emissionEpochLabel }}
+            </span>
+          </div>
+
+          <!-- Preset Milestone Buttons -->
+          <div class="space-y-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400 block">
+              {{ locale === 'tr' ? 'Hızlı Dönem Seçimi:' : 'Quick Epoch Presets:' }}
+            </span>
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-for="preset in heightPresets"
+                :key="preset.height"
+                type="button"
+                @click="calcHeight = preset.height"
+                class="px-3 py-1.5 rounded-xl text-xs font-mono font-semibold border transition-all cursor-pointer"
+                :class="Number(calcHeight) === preset.height
+                  ? 'btn-brand-primary border-transparent'
+                  : 'bg-cobalt-50/70 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border-cobalt-200/70 dark:border-slate-700 hover:border-cobalt-400'"
+              >
+                {{ locale === 'tr' ? preset.labelTr : preset.labelEn }}
+              </button>
             </div>
           </div>
 
-          <!-- Input Slider -->
-          <div class="space-y-4 pt-4">
-            <div class="flex justify-between items-center text-xs sm:text-sm">
-              <label for="block-height-input" class="text-slate-500 font-semibold">{{ t('blockHeight') }}:</label>
-              <input 
+          <!-- Slider & Input Control -->
+          <div class="space-y-3 pt-1">
+            <div class="flex items-center justify-between gap-4">
+              <label for="block-height-input" class="text-sm font-bold text-slate-700 dark:text-slate-200">
+                {{ t('blockHeight') }}:
+              </label>
+              <input
                 id="block-height-input"
-                type="number" 
-                v-model="calcHeight" 
-                min="1" 
-                max="5000000" 
-                class="bg-white border border-slate-200 rounded px-3 py-1 text-sm text-slate-700 focus:outline-none focus:border-mint-500/50 w-32 text-right font-mono"
+                type="number"
+                v-model="calcHeight"
+                min="1"
+                max="5000000"
+                class="bg-white dark:bg-slate-900 border border-cobalt-300/70 dark:border-slate-700 rounded-xl px-3.5 py-1.5 text-sm font-mono font-bold text-slate-800 dark:text-white w-36 text-right"
               />
             </div>
-            <input 
-              type="range" 
-              v-model="calcHeight" 
-              min="1" 
-              max="3500000" 
-              class="w-full accent-mint-500 bg-slate-200 h-1.5 rounded-lg appearance-none cursor-pointer"
+            <input
+              type="range"
+              aria-label="Block Height Slider"
+              v-model="calcHeight"
+              min="1"
+              max="3500000"
+              :style="{ '--progress': sliderProgressPercent }"
+              class="brand-slider w-full h-2 rounded-lg cursor-pointer"
             />
           </div>
 
-          <!-- Calculations Output -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-6 border-t border-slate-200/50">
-            <!-- Left Stats -->
-            <div class="space-y-4">
-              <div>
-                <span class="text-[10px] text-slate-400 uppercase tracking-wider block font-bold">Total Block Reward</span>
-                <div class="text-3xl font-extrabold text-slate-800 mt-1 font-mono">
-                  {{ totalReward }} <span class="text-xs font-semibold text-slate-400">KRISTA</span>
-                </div>
-              </div>
-
-              <div>
-                <span class="text-[10px] text-slate-400 uppercase tracking-wider block font-bold">Masternode Collateral</span>
-                <div class="text-xl font-bold text-sky-blue-600 mt-1 font-mono">
-                  {{ requiredCollateral.toLocaleString() }} <span class="text-xs font-semibold text-slate-400">KRISTA</span>
-                </div>
+          <!-- Harmonious Tonal Summary Metrics Banner -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-5 rounded-2xl tonal-panel">
+            <div>
+              <span class="text-xs font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400 block">
+                {{ t('blockRewardTotal') }}
+              </span>
+              <div class="text-2xl sm:text-3xl font-extrabold font-mono text-cobalt-700 dark:text-cobalt-300 mt-1">
+                {{ totalReward }} <span class="text-xs font-semibold text-slate-500">KRISTA</span>
               </div>
             </div>
-
-            <!-- Right splits -->
-            <div class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200/50 shadow-inner">
-              <span class="text-[10px] text-slate-400 uppercase tracking-wider block font-bold mb-2">Payout Allocations</span>
-              
-              <!-- Dev Hazine Allocation -->
-              <div v-if="splitPercentages.dev > 0" class="space-y-1">
-                <div class="flex justify-between text-[11px] font-semibold text-slate-600">
-                  <span>{{ t('devReward') }}</span>
-                  <span class="font-mono">{{ devRewardAmount }} KRISTA ({{ splitPercentages.dev }}%)</span>
-                </div>
-                <div class="w-full h-1 bg-slate-200 rounded-full overflow-hidden">
-                  <div class="h-full bg-slate-600" :style="{ width: `${splitPercentages.dev}%` }"></div>
-                </div>
-              </div>
-
-              <!-- Faucet Allocation -->
-              <div v-if="splitPercentages.faucet > 0" class="space-y-1 pt-1">
-                <div class="flex justify-between text-[11px] font-semibold text-slate-600">
-                  <span>{{ t('faucetReward') }}</span>
-                  <span class="font-mono">{{ faucetRewardAmount }} KRISTA ({{ splitPercentages.faucet }}%)</span>
-                </div>
-                <div class="w-full h-1 bg-slate-200 rounded-full overflow-hidden">
-                  <div class="h-full bg-orange-400" :style="{ width: `${splitPercentages.faucet * 10}%` }"></div>
-                </div>
-              </div>
-
-              <!-- Masternode Allocation -->
-              <div v-if="splitPercentages.mn > 0" class="space-y-1 pt-1">
-                <div class="flex justify-between text-[11px] font-semibold text-slate-600">
-                  <span class="text-sky-blue-600">{{ t('masternodeReward') }}</span>
-                  <span class="font-mono text-slate-700">{{ mnRewardAmount }} KRISTA ({{ splitPercentages.mn }}%)</span>
-                </div>
-                <div class="w-full h-1 bg-slate-200 rounded-full overflow-hidden">
-                  <div class="h-full bg-sky-blue-500" :style="{ width: `${splitPercentages.mn}%` }"></div>
-                </div>
-              </div>
-
-              <!-- Active Quorum Allocation -->
-              <div v-if="splitPercentages.quorum > 0" class="space-y-1 pt-1">
-                <div class="flex justify-between text-[11px] font-semibold text-slate-600">
-                  <span class="text-sky-blue-700">{{ t('quorumReward') }}</span>
-                  <span class="font-mono text-slate-700">{{ quorumRewardAmount }} KRISTA ({{ splitPercentages.quorum }}%)</span>
-                </div>
-                <div class="w-full h-1 bg-slate-200 rounded-full overflow-hidden">
-                  <div class="h-full bg-sky-blue-600" :style="{ width: `${splitPercentages.quorum}%` }"></div>
-                </div>
-              </div>
-
-              <!-- Participants Allocation -->
-              <div v-if="splitPercentages.participants > 0" class="space-y-1 pt-1">
-                <div class="flex justify-between text-[11px] font-semibold text-slate-600">
-                  <span class="text-mint-700">{{ t('participantsReward') }}</span>
-                  <span class="font-mono text-slate-700">{{ participantsRewardAmount }} KRISTA ({{ splitPercentages.participants }}%)</span>
-                </div>
-                <div class="w-full h-1 bg-slate-200 rounded-full overflow-hidden">
-                  <div class="h-full bg-mint-400" :style="{ width: `${splitPercentages.participants}%` }"></div>
-                </div>
-              </div>
-
-              <!-- Block Producer Allocation -->
-              <div class="space-y-1 pt-1">
-                <div class="flex justify-between text-[11px] font-semibold text-slate-600">
-                  <span class="text-mint-600">{{ t('validatorReward') }}</span>
-                  <span class="font-mono text-slate-700">{{ producerRewardAmount }} KRISTA ({{ splitPercentages.producer.toFixed(1) }}%)</span>
-                </div>
-                <div class="w-full h-1 bg-slate-200 rounded-full overflow-hidden">
-                  <div class="h-full bg-mint-500" :style="{ width: `${splitPercentages.producer}%` }"></div>
-                </div>
+            <div>
+              <span class="text-xs font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400 block">
+                {{ locale === 'tr' ? 'Masternode Teminatı' : 'Masternode Collateral' }}
+              </span>
+              <div class="text-2xl sm:text-3xl font-extrabold font-mono text-coral-600 dark:text-coral-300 mt-1">
+                {{ requiredCollateral.toLocaleString() }} <span class="text-xs font-semibold text-slate-500">KRISTA</span>
               </div>
             </div>
+          </div>
+
+          <!-- Visual Multi-Segment Stacked Bar -->
+          <div class="space-y-2">
+            <div class="w-full h-3.5 bg-cobalt-100/80 dark:bg-slate-800 rounded-full overflow-hidden flex p-0.5 gap-0.5">
+              <div
+                v-for="row in allocationRows"
+                :key="row.key"
+                v-show="row.percent > 0"
+                :class="row.barClass"
+                class="h-full transition-all duration-300 first:rounded-l-full last:rounded-r-full"
+                :style="{ width: `${row.percent}%` }"
+              ></div>
+            </div>
+          </div>
+
+          <!-- Accessible Semantic Table for Payout Allocations -->
+          <div class="overflow-x-auto rounded-2xl border border-cobalt-200/70 dark:border-slate-800 bg-white/60 dark:bg-slate-900/50">
+            <table class="w-full text-left border-collapse text-xs sm:text-sm">
+              <caption class="visually-hidden">
+                {{ locale === 'tr' ? 'Model D Blok Ödülü Dağılım Tablosu' : 'Model D Block Reward Split Breakdown Table' }}
+              </caption>
+              <thead>
+                <tr class="bg-cobalt-50/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border-b border-cobalt-200/60 dark:border-slate-700">
+                  <th scope="col" class="py-3 px-4 font-bold">{{ locale === 'tr' ? 'Alıcı Katmanı' : 'Recipient Tier' }}</th>
+                  <th scope="col" class="py-3 px-4 font-bold text-right">{{ locale === 'tr' ? 'Oran (%)' : 'Share (%)' }}</th>
+                  <th scope="col" class="py-3 px-4 font-bold text-right">{{ locale === 'tr' ? 'Blok Başına Ödül' : 'Payout / Block' }}</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-cobalt-100 dark:divide-slate-800">
+                <tr
+                  v-for="row in allocationRows"
+                  :key="row.key"
+                  class="hover:bg-cobalt-50/50 dark:hover:bg-slate-800/40 transition-colors"
+                >
+                  <td class="py-2.5 px-4 font-semibold text-slate-700 dark:text-slate-200">
+                    <span class="inline-flex items-center gap-2.5">
+                      <span class="w-3 h-3 rounded-full shrink-0" :class="row.dotClass"></span>
+                      <span>{{ row.label }}</span>
+                    </span>
+                  </td>
+                  <td class="py-2.5 px-4 font-mono text-right text-slate-600 dark:text-slate-300">
+                    {{ row.percent.toFixed(2) }}%
+                  </td>
+                  <td class="py-2.5 px-4 font-mono font-bold text-right text-slate-800 dark:text-white">
+                    {{ row.amount }} KRISTA
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Roadmap Section -->
+    <!-- 5. CONSENSUS ACTIVATION ROADMAP (#roadmap) -->
     <section id="roadmap" class="scroll-mt-24 space-y-12">
-      <div class="text-center space-y-3">
-        <h2 class="text-3xl font-extrabold text-slate-800 tracking-tight">
+      <div class="max-w-3xl mx-auto text-center space-y-3">
+        <span class="inline-block text-xs font-mono font-bold uppercase tracking-widest px-3.5 py-1 rounded-full bg-coral-400/15 text-coral-700 dark:text-coral-300 border border-coral-400/30">
+          04 / ACTIVATION ROADMAP
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-800 dark:text-white tracking-tight">
           {{ t('phaseTitle') }}
         </h2>
-        <p class="text-slate-500 text-sm sm:text-base max-w-2xl mx-auto">
+        <p class="text-slate-600 dark:text-slate-300 text-base leading-relaxed">
           {{ t('phaseSubtitle') }}
         </p>
       </div>
 
-      <div class="relative max-w-4xl mx-auto px-4">
-        <!-- Connecting Line -->
-        <div class="absolute left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-mint-500/30 via-sky-blue-500/30 to-transparent transform -translate-x-1/2 hidden md:block"></div>
-
-        <div class="space-y-12">
-          <!-- Phase 1 -->
-          <div class="relative flex flex-col md:flex-row items-center gap-8 group">
-            <div class="flex-1 text-right hidden md:block pr-8">
-              <span class="text-[10px] font-bold text-mint-600 uppercase tracking-widest bg-mint-500/10 px-3 py-1 rounded-full border border-mint-500/20">Active</span>
-            </div>
-
-            <!-- Bullet point node -->
-            <div class="w-6 h-6 rounded-full border-4 border-[#f3f7f5] bg-mint-500 shadow-md shadow-mint-500/40 z-10 shrink-0"></div>
-
-            <div class="flex-1 glass-card rounded-2xl p-6 border border-slate-200/50 shadow-sm pl-8 text-left">
-              <div class="md:hidden mb-2">
-                <span class="text-[10px] font-bold text-mint-600 uppercase tracking-widest bg-mint-500/10 px-3 py-1 rounded-full border border-mint-500/20">Active</span>
-              </div>
-              <h3 class="text-base font-bold text-slate-800">{{ t('phase1') }}</h3>
-              <p class="text-slate-500 text-xs sm:text-sm mt-2 leading-relaxed">
-                {{ t('phase1Desc') }}
-              </p>
-            </div>
-          </div>
-
-          <!-- Phase 2 -->
-          <div class="relative flex flex-col md:flex-row items-center gap-8 group">
-            <!-- Bullet point node -->
-            <div 
-              class="w-6 h-6 rounded-full border-4 border-[#f3f7f5] shadow-md z-10 shrink-0 md:order-2"
-              :class="currentBlock >= 200 ? 'bg-mint-500 shadow-mint-500/40' : 'bg-sky-blue-500 shadow-sky-blue-500/20'"
-            ></div>
-
-            <div class="flex-1 glass-card rounded-2xl p-6 border border-slate-200/50 shadow-sm pr-8 text-left md:text-right md:order-1">
-              <div class="mb-2">
-                <span 
-                  class="text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border"
-                  :class="currentBlock >= 200 ? 'text-mint-600 bg-mint-500/10 border-mint-500/20' : 'text-sky-blue-600 bg-sky-blue-500/10 border-sky-blue-500/20'"
-                >
-                  {{ currentBlock >= 200 ? 'Active' : 'Next Phase' }}
-                </span>
-              </div>
-              <h3 class="text-base font-bold text-slate-800">{{ t('phase2') }}</h3>
-              <p class="text-slate-500 text-xs sm:text-sm mt-2 leading-relaxed">
-                {{ t('phase2Desc') }}
-              </p>
-            </div>
-
-            <div class="flex-1 hidden md:block"></div>
-          </div>
-
-          <!-- Phase 3 -->
-          <div class="relative flex flex-col md:flex-row items-center gap-8 group">
-            <div class="flex-1 text-right hidden md:block pr-8">
-              <span 
-                class="text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border"
-                :class="currentBlock >= 2000 ? 'text-mint-600 bg-mint-500/10 border-mint-500/20' : (currentBlock >= 200 ? 'text-sky-blue-600 bg-sky-blue-500/10 border-sky-blue-500/20' : 'text-slate-400 bg-slate-100 border-slate-200')"
-              >
-                {{ currentBlock >= 2000 ? 'Active' : (currentBlock >= 200 ? 'Next Phase' : 'Future') }}
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Phase 1 -->
+        <div class="protocol-card rounded-3xl p-6 flex flex-col justify-between border-t-4 border-t-[#7695CD]">
+          <div class="space-y-4">
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-mono text-xs font-extrabold px-2.5 py-1 rounded-lg bg-cobalt-400/15 text-cobalt-700 dark:text-cobalt-300">
+                BLOCK 1
+              </span>
+              <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-cobalt-400/15 text-cobalt-700 dark:text-cobalt-300 border border-cobalt-400/30">
+                {{ locale === 'tr' ? 'Aktif' : 'Active' }}
               </span>
             </div>
-
-            <!-- Bullet point node -->
-            <div 
-              class="w-6 h-6 rounded-full border-4 border-[#f3f7f5] shadow-md z-10 shrink-0"
-              :class="currentBlock >= 2000 ? 'bg-mint-500 shadow-mint-500/40' : (currentBlock >= 200 ? 'bg-sky-blue-500 shadow-sky-blue-500/20' : 'bg-slate-300')"
-            ></div>
-
-            <div class="flex-1 glass-card rounded-2xl p-6 border border-slate-200/50 shadow-sm pl-8 text-left">
-              <div class="md:hidden mb-2">
-                <span 
-                  class="text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border"
-                  :class="currentBlock >= 2000 ? 'text-mint-600 bg-mint-500/10 border-mint-500/20' : (currentBlock >= 200 ? 'text-sky-blue-600 bg-sky-blue-500/10 border-sky-blue-500/20' : 'text-slate-400 bg-slate-100 border-slate-200')"
-                >
-                  {{ currentBlock >= 2000 ? 'Active' : (currentBlock >= 200 ? 'Next Phase' : 'Future') }}
-                </span>
-              </div>
-              <h3 class="text-base font-bold text-slate-800">{{ t('phase3') }}</h3>
-              <p class="text-slate-500 text-xs sm:text-sm mt-2 leading-relaxed">
-                {{ t('phase3Desc') }}
-              </p>
-            </div>
+            <h3 class="text-lg font-extrabold text-slate-800 dark:text-white">
+              {{ t('phase1') }}
+            </h3>
+            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+              {{ t('phase1Desc') }}
+            </p>
           </div>
-
-          <!-- Phase 4 -->
-          <div class="relative flex flex-col md:flex-row items-center gap-8 group">
-            <!-- Bullet point node -->
-            <div 
-              class="w-6 h-6 rounded-full border-4 border-[#f3f7f5] shadow-md z-10 shrink-0 md:order-2"
-              :class="currentBlock >= 2200 ? 'bg-mint-500 shadow-mint-500/40' : (currentBlock >= 2000 ? 'bg-sky-blue-500 shadow-sky-blue-500/20' : 'bg-slate-300')"
-            ></div>
-
-            <div class="flex-1 glass-card rounded-2xl p-6 border border-slate-200/50 shadow-sm pr-8 text-left md:text-right md:order-1">
-              <div class="mb-2">
-                <span 
-                  class="text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border"
-                  :class="currentBlock >= 2200 ? 'text-mint-600 bg-mint-500/10 border-mint-500/20' : (currentBlock >= 2000 ? 'text-sky-blue-600 bg-sky-blue-500/10 border-sky-blue-500/20' : 'text-slate-400 bg-slate-100 border-slate-200')"
-                >
-                  {{ currentBlock >= 2200 ? 'Active' : (currentBlock >= 2000 ? 'Next Phase' : 'Future') }}
-                </span>
-              </div>
-              <h3 class="text-base font-bold text-slate-800">{{ t('phase4') }}</h3>
-              <p class="text-slate-500 text-xs sm:text-sm mt-2 leading-relaxed">
-                {{ t('phase4Desc') }}
-              </p>
-            </div>
-
-            <div class="flex-1 hidden md:block text-right"></div>
+          <div class="pt-4 mt-6 border-t border-cobalt-200/50 dark:border-slate-800 flex items-center justify-between text-xs font-mono text-slate-500">
+            <span>X11KVS + MESCAL</span>
+            <span class="text-cobalt-600 dark:text-cobalt-400 font-bold">100%</span>
           </div>
+        </div>
 
+        <!-- Phase 2 -->
+        <div
+          class="protocol-card rounded-3xl p-6 flex flex-col justify-between border-t-4"
+          :class="currentBlock >= 200 ? 'border-t-[#7695CD]' : 'border-t-[#F5897C]'"
+        >
+          <div class="space-y-4">
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-mono text-xs font-extrabold px-2.5 py-1 rounded-lg bg-cobalt-400/15 text-cobalt-700 dark:text-cobalt-300">
+                BLOCK 200
+              </span>
+              <span
+                class="text-xs font-bold px-2.5 py-0.5 rounded-full border"
+                :class="currentBlock >= 200
+                  ? 'bg-cobalt-400/15 text-cobalt-700 dark:text-cobalt-300 border-cobalt-400/30'
+                  : 'bg-coral-400/15 text-coral-700 dark:text-coral-300 border-coral-400/30'"
+              >
+                {{ currentBlock >= 200 ? (locale === 'tr' ? 'Aktif' : 'Active') : (locale === 'tr' ? 'Sıradaki' : 'Next Phase') }}
+              </span>
+            </div>
+            <h3 class="text-lg font-extrabold text-slate-800 dark:text-white">
+              {{ t('phase2') }}
+            </h3>
+            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+              {{ t('phase2Desc') }}
+            </p>
+          </div>
+          <div class="pt-4 mt-6 border-t border-cobalt-200/50 dark:border-slate-800 flex items-center justify-between text-xs font-mono text-slate-500">
+            <span>PoS + ADAM VRF</span>
+            <span class="text-cobalt-600 dark:text-cobalt-400 font-bold">
+              {{ currentBlock >= 200 ? '100%' : `${Math.floor((currentBlock / 200) * 100)}%` }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Phase 3 -->
+        <div
+          class="protocol-card rounded-3xl p-6 flex flex-col justify-between border-t-4"
+          :class="currentBlock >= 2000 ? 'border-t-[#7695CD]' : 'border-t-[#F5897C]'"
+        >
+          <div class="space-y-4">
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-mono text-xs font-extrabold px-2.5 py-1 rounded-lg bg-coral-400/15 text-coral-700 dark:text-coral-300">
+                BLOCK 2,000
+              </span>
+              <span
+                class="text-xs font-bold px-2.5 py-0.5 rounded-full border"
+                :class="currentBlock >= 2000
+                  ? 'bg-cobalt-400/15 text-cobalt-700 dark:text-cobalt-300 border-cobalt-400/30'
+                  : 'bg-coral-400/15 text-coral-700 dark:text-coral-300 border-coral-400/30'"
+              >
+                {{ currentBlock >= 2000 ? (locale === 'tr' ? 'Aktif' : 'Active') : (locale === 'tr' ? 'Sıradaki' : 'Next Phase') }}
+              </span>
+            </div>
+            <h3 class="text-lg font-extrabold text-slate-800 dark:text-white">
+              {{ t('phase3') }}
+            </h3>
+            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+              {{ t('phase3Desc') }}
+            </p>
+          </div>
+          <div class="pt-4 mt-6 border-t border-cobalt-200/50 dark:border-slate-800 flex items-center justify-between text-xs font-mono text-slate-500">
+            <span>BLST secp256k1</span>
+            <span class="text-coral-600 dark:text-coral-400 font-bold">
+              {{ currentBlock >= 2000 ? '100%' : `${Math.min(99, Math.floor((currentBlock / 2000) * 100))}%` }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Phase 4 -->
+        <div
+          class="protocol-card rounded-3xl p-6 flex flex-col justify-between border-t-4"
+          :class="currentBlock >= 2200 ? 'border-t-[#7695CD]' : 'border-t-cobalt-300 dark:border-t-slate-700'"
+        >
+          <div class="space-y-4">
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-mono text-xs font-extrabold px-2.5 py-1 rounded-lg bg-cobalt-400/15 text-cobalt-700 dark:text-cobalt-300">
+                BLOCK 2,200
+              </span>
+              <span
+                class="text-xs font-bold px-2.5 py-0.5 rounded-full border"
+                :class="currentBlock >= 2200
+                  ? 'bg-cobalt-400/15 text-cobalt-700 dark:text-cobalt-300 border-cobalt-400/30'
+                  : 'bg-cobalt-50 dark:bg-slate-800 text-cobalt-700 dark:text-slate-300 border-cobalt-200 dark:border-slate-700'"
+              >
+                {{ currentBlock >= 2200 ? (locale === 'tr' ? 'Aktif' : 'Active') : (locale === 'tr' ? 'Planlanan' : 'Scheduled') }}
+              </span>
+            </div>
+            <h3 class="text-lg font-extrabold text-slate-800 dark:text-white">
+              {{ t('phase4') }}
+            </h3>
+            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+              {{ t('phase4Desc') }}
+            </p>
+          </div>
+          <div class="pt-4 mt-6 border-t border-cobalt-200/50 dark:border-slate-800 flex items-center justify-between text-xs font-mono text-slate-500">
+            <span>50 / 25 / 15 / 10</span>
+            <span class="text-cobalt-600 dark:text-cobalt-400 font-bold">
+              {{ currentBlock >= 2200 ? '100%' : `${Math.min(99, Math.floor((currentBlock / 2200) * 100))}%` }}
+            </span>
+          </div>
         </div>
       </div>
     </section>
-  </div>
-</template>
 
-<style scoped>
-.text-glow-mint {
-  text-shadow: 0 0 12px rgba(51, 184, 125, 0.2);
-}
-</style>
+    <!-- 6. OFFICIAL TECHNICAL DOCUMENTATION & RESEARCH LIBRARY (#docs) -->
+    <section id="docs" class="scroll-mt-24 space-y-12">
+      <div class="max-w-3xl mx-auto text-center space-y-3">
+        <span class="inline-block text-xs font-mono font-bold uppercase tracking-widest px-3.5 py-1 rounded-full bg-cobalt-400/15 text-cobalt-700 dark:text-cobalt-300 border border-cobalt-400/30">
+          05 / RESEARCH &amp; DOCUMENTATION
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-800 dark:text-white tracking-tight">
+          {{ t('docsSectionTitle') }}
+        </h2>
+        <p class="text-slate-600 dark:text-slate-300 text-base leading-relaxed">
+          {{ t('docsSectionSubtitle') }}
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <a
+          v-for="paper in researchPapers"
+          :key="paper.code"
+          :href="paper.href"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="protocol-card rounded-3xl p-6 flex flex-col justify-between group no-underline"
+        >
+          <div class="space-y-3">
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-mono text-xs text-slate-400">{{ paper.code }}</span>
+              <span
+                class="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-lg border"
+                :class="paper.accent === 'coral'
+                  ? 'bg-coral-400/15 text-coral-700 dark:text-coral-300 border-coral-400/30'
+                  : 'bg-cobalt-400/15 text-cobalt-700 dark:text-cobalt-300 border-cobalt-400/30'"
+              >
+                {{ paper.badge }}
+              </span>
+            </div>
+            <h3 class="text-base font-extrabold text-slate-800 dark:text-white group-hover:text-cobalt-600 dark:group-hover:text-coral-300 transition-colors">
+              {{ paper.title }}
+            </h3>
+            <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+              {{ paper.desc }}
+            </p>
+          </div>
+
+          <div class="pt-4 mt-5 border-t border-cobalt-200/50 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-cobalt-700 dark:text-cobalt-300 group-hover:text-coral-600 dark:group-hover:text-coral-300 transition-colors">
+            <span>{{ locale === 'tr' ? 'Belgeyi İncele (TR/EN)' : 'Read Specification' }}</span>
+            <svg aria-hidden="true" class="w-4 h-4 transition-transform group-hover:translate-x-0.5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M5.22 14.78a.75.75 0 001.06 0l7.22-7.22v5.69a.75.75 0 001.5 0v-7.5a.75.75 0 00-.75-.75h-7.5a.75.75 0 000 1.5h5.69l-7.22 7.22a.75.75 0 000 1.06z" clip-rule="evenodd" />
+            </svg>
+          </div>
+        </a>
+      </div>
+    </section>
+  </UContainer>
+</template>
