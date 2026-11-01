@@ -109,7 +109,7 @@ onUnmounted(() => {
             <div class="absolute left-0 top-full pt-2 w-56 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-200 z-50">
               <div class="rounded-xl bg-white border border-slate-200/60 shadow-lg p-2">
                 <a 
-                  href="https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/ADAM_Consensus.md" 
+                  :href="locale === 'tr' ? 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/ADAM_Consensus_TR.md' : 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/ADAM_Consensus.md'" 
                   target="_blank" 
                   class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
                 >
@@ -123,7 +123,7 @@ onUnmounted(() => {
                   {{ locale === 'tr' ? 'PoBLS Konsensüsü' : 'PoBLS Consensus' }}
                 </a>
                 <a 
-                  href="https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/MESCAL.md" 
+                  :href="locale === 'tr' ? 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/MESCAL_TR.md' : 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/MESCAL.md'" 
                   target="_blank" 
                   class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
                 >
@@ -144,14 +144,14 @@ onUnmounted(() => {
                   {{ locale === 'tr' ? 'Hardcap Analizi' : 'Hardcap Analysis' }}
                 </a>
                 <a 
-                  href="https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Miner_Registration.md" 
+                  :href="locale === 'tr' ? 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Miner_Registration_TR.md' : 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Miner_Registration.md'" 
                   target="_blank" 
                   class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
                 >
                   {{ locale === 'tr' ? 'Madenci Kaydı' : 'Miner Registration' }}
                 </a>
                 <a 
-                  href="https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Security_Audit.md" 
+                  :href="locale === 'tr' ? 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Security_Audit_TR.md' : 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Security_Audit.md'" 
                   target="_blank" 
                   class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
                 >
@@ -324,7 +324,7 @@ onUnmounted(() => {
             <span class="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-2">{{ t('navDocuments') }}</span>
             <div class="flex flex-col gap-1 border-l border-slate-100 pl-3">
               <a 
-                href="https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/ADAM_Consensus.md" 
+                :href="locale === 'tr' ? 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/ADAM_Consensus_TR.md' : 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/ADAM_Consensus.md'" 
                 target="_blank" 
                 class="block py-1.5 text-xs font-semibold text-slate-500 hover:text-mint-600 transition-colors"
               >
@@ -338,7 +338,7 @@ onUnmounted(() => {
                 {{ locale === 'tr' ? 'PoBLS Konsensüsü' : 'PoBLS Consensus' }}
               </a>
               <a 
-                href="https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/MESCAL.md" 
+                :href="locale === 'tr' ? 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/MESCAL_TR.md' : 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/MESCAL.md'" 
                 target="_blank" 
                 class="block py-1.5 text-xs font-semibold text-slate-500 hover:text-mint-600 transition-colors"
               >
@@ -359,14 +359,14 @@ onUnmounted(() => {
                 {{ locale === 'tr' ? 'Hardcap Analizi' : 'Hardcap Analysis' }}
               </a>
               <a 
-                href="https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Miner_Registration.md" 
+                :href="locale === 'tr' ? 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Miner_Registration_TR.md' : 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Miner_Registration.md'" 
                 target="_blank" 
                 class="block py-1.5 text-xs font-semibold text-slate-500 hover:text-mint-600 transition-colors"
               >
                 {{ locale === 'tr' ? 'Madenci Kaydı' : 'Miner Registration' }}
               </a>
               <a 
-                href="https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Security_Audit.md" 
+                :href="locale === 'tr' ? 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Security_Audit_TR.md' : 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Security_Audit.md'" 
                 target="_blank" 
                 class="block py-1.5 text-xs font-semibold text-slate-500 hover:text-mint-600 transition-colors"
               >
@@ -448,7 +448,7 @@ onUnmounted(() => {
             <div class="absolute bottom-full left-0 pb-2 w-56 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-200 z-50">
               <div class="rounded-xl bg-white border border-slate-200/60 shadow-lg p-2">
                 <a 
-                  href="https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/ADAM_Consensus.md" 
+                  :href="locale === 'tr' ? 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/ADAM_Consensus_TR.md' : 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/ADAM_Consensus.md'" 
                   target="_blank" 
                   class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
                 >
@@ -462,7 +462,7 @@ onUnmounted(() => {
                   {{ locale === 'tr' ? 'PoBLS Konsensüsü' : 'PoBLS Consensus' }}
                 </a>
                 <a 
-                  href="https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/MESCAL.md" 
+                  :href="locale === 'tr' ? 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/MESCAL_TR.md' : 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/MESCAL.md'" 
                   target="_blank" 
                   class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
                 >
@@ -483,14 +483,14 @@ onUnmounted(() => {
                   {{ locale === 'tr' ? 'Hardcap Analizi' : 'Hardcap Analysis' }}
                 </a>
                 <a 
-                  href="https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Miner_Registration.md" 
+                  :href="locale === 'tr' ? 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Miner_Registration_TR.md' : 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Miner_Registration.md'" 
                   target="_blank" 
                   class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
                 >
                   {{ locale === 'tr' ? 'Madenci Kaydı' : 'Miner Registration' }}
                 </a>
                 <a 
-                  href="https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Security_Audit.md" 
+                  :href="locale === 'tr' ? 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Security_Audit_TR.md' : 'https://github.com/bedri/KristaTech-KRISTA/blob/develop/doc/Security_Audit.md'" 
                   target="_blank" 
                   class="block px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-mint-600 hover:bg-mint-50/50 transition-colors"
                 >
@@ -508,7 +508,7 @@ onUnmounted(() => {
           </div>
 
           <a href="https://github.com/bedri/KristaTech-KRISTA" target="_blank" class="hover:text-mint-600 transition-colors">{{ t('github') }}</a>
-          <span class="text-xs px-2 py-0.5 rounded bg-white border border-slate-200/80 text-slate-500 font-semibold shadow-sm">v1.2.0</span>
+          <span class="text-xs px-2 py-0.5 rounded bg-white border border-slate-200/80 text-slate-500 font-semibold shadow-sm">v1.4.5.9</span>
         </div>
       </UContainer>
       <UContainer class="mt-6 border-t border-slate-200/50 pt-6 text-center text-xs text-slate-400">
