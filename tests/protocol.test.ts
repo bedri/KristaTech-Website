@@ -72,28 +72,29 @@ describe('Protocol & Cryptoeconomic Utilities (app/utils/protocol.ts)', () => {
       assert.match(m.eraName, /Aşama 1/)
     })
 
-    it('computes Phase 2 milestone for blocks 200..1999', () => {
-      const m = calculateNextMilestone(1100, 'en')
-      assert.equal(m.target, 2000)
-      assert.equal(m.remaining, 900)
+    it('computes Phase 2 milestone for blocks 200..1799', () => {
+      const m = calculateNextMilestone(1000, 'en')
+      assert.equal(m.target, 1800)
+      assert.equal(m.remaining, 800)
       assert.equal(m.progress, 50)
       assert.match(m.eraName, /Phase 2 Active/)
     })
 
-    it('computes Phase 3 milestone for blocks 2000..2199', () => {
-      const m = calculateNextMilestone(2100, 'en')
+    it('computes Phase 3 milestone for blocks 1800..2199', () => {
+      const m = calculateNextMilestone(2000, 'en')
       assert.equal(m.target, 2200)
-      assert.equal(m.remaining, 100)
+      assert.equal(m.remaining, 200)
       assert.equal(m.progress, 50)
       assert.match(m.eraName, /Phase 3 Active/)
     })
 
-    it('computes Phase 4 milestone for blocks >= 2200 and clamps progress at 100%', () => {
+    it('computes Phase 4 quarterly emission milestone dynamically for blocks >= 10000', () => {
       const m = calculateNextMilestone(15000, 'tr')
-      assert.equal(m.target, 10000)
-      assert.equal(m.remaining, 0)
-      assert.equal(m.progress, 100)
-      assert.match(m.eraName, /Aşama 4 Aktif/)
+      assert.equal(m.prev, 10000)
+      assert.equal(m.target, 269200)
+      assert.equal(m.remaining, 254200)
+      assert.ok(m.progress >= 2 && m.progress < 100)
+      assert.match(m.eraName, /Aşama 4 Aktif: Tam Model D • Çeyrek #1/)
     })
   })
 
@@ -208,15 +209,15 @@ describe('Protocol & Cryptoeconomic Utilities (app/utils/protocol.ts)', () => {
         locktime: 2880,
         refundAddress: 'KTNrvQkwv1Yo...CYv'
       })
-      assert.match(escrowCode, /OP_INIT_CONTRACT "COIN_LOCK_MINER"/)
-      assert.match(escrowCode, /OP_CHECK_COLLATERAL 210000000_KRISTA/)
-      assert.match(escrowCode, /OP_PUSH_TIMEOUT 2880_BLOCKS/)
+      assert.match(escrowCode, /OP_MESCAL_HEADER <version:1> <template:COIN_LOCK_MINER>/)
+      assert.match(escrowCode, /<210000000_KRISTA> OP_DROP/)
+      assert.match(escrowCode, /<2880> OP_CHECKLOCKTIMEVERIFY OP_DROP/)
 
       const vestingCode = generateMescalBytecode('vesting')
-      assert.match(vestingCode, /OP_INIT_CONTRACT "LINEAR_VESTING"/)
+      assert.match(vestingCode, /OP_MESCAL_HEADER <version:1> <template:LINEAR_VESTING>/)
 
       const tokenCode = generateMescalBytecode('token')
-      assert.match(tokenCode, /OP_INIT_CONTRACT "ASSET_TOKENIZATION"/)
+      assert.match(tokenCode, /OP_MESCAL_HEADER <version:1> <template:HTLC_ATOMIC_SWAP>/)
     })
   })
 })

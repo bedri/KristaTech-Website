@@ -7,7 +7,7 @@ export type ThemeMode = (typeof SUPPORTED_THEMES)[number]
 export const MAX_SAFE_BLOCK_HEIGHT = 10_000_000
 export const MAX_SUPPLY_KRISTA = 210_000_000
 export const MAX_LOCKTIME_BLOCKS = 5_256_000 // ~5 years at 30s/block
-export const MASTERNODE_COLLATERAL = 2_100
+export const MASTERNODE_COLLATERAL = 4_200
 
 export function sanitizeLocale(input: unknown, fallback: Locale = 'tr'): Locale {
   if (typeof input === 'string') {
@@ -81,35 +81,53 @@ export function calculateNextMilestone(heightInput: unknown, localeInput: unknow
     }
   }
 
-  if (h < 2000) {
+  if (h < 1800) {
     return {
-      target: 2000,
+      target: 1800,
       prev: 200,
       eraName: isTr ? 'Aşama 2 Aktif: PoS + ADAM VRF' : 'Phase 2 Active: PoS + ADAM VRF',
-      nextName: isTr ? 'Aşama 3: PoBLS Çekilişi (Blok 2.000)' : 'Phase 3: PoBLS Lottery (Block 2,000)',
-      remaining: 2000 - h,
-      progress: Math.min(100, Math.max(5, ((h - 200) / 1800) * 100))
+      nextName: isTr ? 'Aşama 3: PoBLS Çekilişi (Blok 1.800)' : 'Phase 3: PoBLS Lottery (Block 1,800)',
+      remaining: 1800 - h,
+      progress: Math.min(100, Math.max(5, ((h - 200) / 1600) * 100))
     }
   }
 
   if (h < 2200) {
     return {
       target: 2200,
-      prev: 2000,
+      prev: 1800,
       eraName: isTr ? 'Aşama 3 Aktif: PoBLS Eşik Çekilişi' : 'Phase 3 Active: PoBLS Threshold Lottery',
       nextName: isTr ? 'Aşama 4: Model D Dağılımı (Blok 2.200)' : 'Phase 4: Model D Splits (Block 2,200)',
       remaining: 2200 - h,
-      progress: Math.min(100, Math.max(5, ((h - 2000) / 200) * 100))
+      progress: Math.min(100, Math.max(5, ((h - 1800) / 400) * 100))
     }
   }
 
+  if (h < 10000) {
+    return {
+      target: 10000,
+      prev: 2200,
+      eraName: isTr ? 'Aşama 4 Aktif: Tam Model D Konsensüsü' : 'Phase 4 Active: Full Model D Consensus',
+      nextName: isTr ? 'Standart Emisyon (Blok 10.000)' : 'Standard Emission (Block 10,000)',
+      remaining: 10000 - h,
+      progress: Math.min(100, Math.max(10, ((h - 2200) / 7800) * 100))
+    }
+  }
+
+  const quarterIndex = Math.floor((h - 10000) / 259200)
+  const prev = 10000 + quarterIndex * 259200
+  const target = prev + 259200
   return {
-    target: 10000,
-    prev: 2200,
-    eraName: isTr ? 'Aşama 4 Aktif: Tam Model D Konsensüsü' : 'Phase 4 Active: Full Model D Consensus',
-    nextName: isTr ? 'Standart Emisyon (Blok 10.000)' : 'Standard Emission (Block 10,000)',
-    remaining: Math.max(0, 10000 - h),
-    progress: Math.min(100, Math.max(10, ((h - 2200) / 7800) * 100))
+    target,
+    prev,
+    eraName: isTr
+      ? `Aşama 4 Aktif: Tam Model D • Çeyrek #${quarterIndex + 1}`
+      : `Phase 4 Active: Full Model D • Quarter #${quarterIndex + 1}`,
+    nextName: isTr
+      ? `Çeyrek #${quarterIndex + 2} Emisyon Geçişi (Blok ${target.toLocaleString('tr-TR')})`
+      : `Quarter #${quarterIndex + 2} Emission Step (Block ${target.toLocaleString('en-US')})`,
+    remaining: target - h,
+    progress: Math.min(100, Math.max(2, ((h - prev) / 259200) * 100))
   }
 }
 
@@ -260,29 +278,29 @@ export function generateMescalBytecode(templateInput: unknown, paramsInput: Mesc
   const params = sanitizeMescalParams(paramsInput)
 
   if (template === 'escrow') {
-    return `OP_INIT_CONTRACT "COIN_LOCK_MINER"
-OP_CHECK_COLLATERAL ${params.amount}_KRISTA
-OP_PUSH_TIMEOUT ${params.locktime}_BLOCKS
-OP_IF_EXPIRED
-  OP_RETURN_TO_OWNER "${params.refundAddress}"
-OP_ELSE
-  OP_REGISTER_MINER_ELIGIBILITY
-OP_ENDIF`
+    return `OP_MESCAL_HEADER <version:1> <template:COIN_LOCK_MINER>
+<${params.amount}_KRISTA> OP_DROP
+<${params.locktime}> OP_CHECKLOCKTIMEVERIFY OP_DROP
+OP_DUP OP_HASH160 <"${params.refundAddress}"> OP_EQUALVERIFY OP_CHECKSIG`
   }
 
   if (template === 'vesting') {
-    return `OP_INIT_CONTRACT "LINEAR_VESTING"
-OP_SET_VESTING_START BLOCK_CURRENT
-OP_PUSH_RATE 20_PERCENT_PER_YEAR
-OP_CHECK_TIMELOCK 730_DAYS
-OP_CLAIM_PROPORTIONAL_RELEASE
-OP_END_CONTRACT`
+    return `OP_MESCAL_HEADER <version:1> <template:LINEAR_VESTING>
+OP_IF
+  <2880> OP_CHECKSEQUENCEVERIFY OP_DROP
+  OP_DUP OP_HASH160 <beneficiary_pkh> OP_EQUALVERIFY OP_CHECKSIG
+OP_ELSE
+  <${params.locktime}> OP_CHECKLOCKTIMEVERIFY OP_DROP
+  OP_DUP OP_HASH160 <"${params.refundAddress}"> OP_EQUALVERIFY OP_CHECKSIG
+OP_ENDIF`
   }
 
-  return `OP_INIT_CONTRACT "ASSET_TOKENIZATION"
-OP_MINT_ASSET "KRISTA_TICKET"
-OP_SET_MAX_SUPPLY 100000000
-OP_MINT_TO_SENDER 5000000
-OP_LOCK_IMMUTABLE_METADATA
-OP_END_CONTRACT`
+  return `OP_MESCAL_HEADER <version:1> <template:HTLC_ATOMIC_SWAP>
+OP_IF
+  OP_SHA256 <secret_hash_32b> OP_EQUALVERIFY
+  OP_DUP OP_HASH160 <recipient_pkh> OP_EQUALVERIFY OP_CHECKSIG
+OP_ELSE
+  <${params.locktime}> OP_CHECKLOCKTIMEVERIFY OP_DROP
+  OP_DUP OP_HASH160 <"${params.refundAddress}"> OP_EQUALVERIFY OP_CHECKSIG
+OP_ENDIF`
 }

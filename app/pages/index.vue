@@ -553,7 +553,7 @@ const researchPapers = computed(() => {
                     </div>
                   </div>
                   <span class="text-[11px] font-mono font-bold px-2.5 py-1 rounded-lg bg-white/80 dark:bg-slate-800 text-coral-700 dark:text-coral-300 border border-coral-200/70 dark:border-slate-700 shrink-0">
-                    Block 2,000+
+                    Block 1,800+
                   </span>
                 </div>
 
@@ -619,7 +619,7 @@ const researchPapers = computed(() => {
             {{ masternodesCount.toLocaleString() }}
           </div>
           <p class="text-xs text-cobalt-700 dark:text-cobalt-300 font-semibold mt-2">
-            {{ locale === 'tr' ? '2.100 KRISTA Teminat • %50 Model D Payı' : '2,100 KRISTA Collateral • 50% Model D Share' }}
+            {{ locale === 'tr' ? '4.200 KRISTA Teminat • %50 Model D Payı' : '4,200 KRISTA Collateral • 50% Model D Share' }}
           </p>
         </div>
 
@@ -1006,7 +1006,7 @@ const researchPapers = computed(() => {
                   {{ locale === 'tr' ? '1. Masternode Operatörü' : '1. Masternode Operator' }}
                 </span>
                 <span class="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-white/85 dark:bg-slate-900 text-cobalt-700 dark:text-cobalt-300 border border-cobalt-200/70 dark:border-slate-700">
-                  2,100 KRISTA {{ locale === 'tr' ? 'Teminat' : 'Collateral' }}
+                  4,200 KRISTA {{ locale === 'tr' ? 'Teminat' : 'Collateral' }}
                 </span>
               </div>
               <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300">
@@ -1335,20 +1335,20 @@ const researchPapers = computed(() => {
         <!-- Phase 3 -->
         <div
           class="protocol-card rounded-3xl p-6 flex flex-col justify-between border-t-4"
-          :class="currentBlock >= 2000 ? 'border-t-[#7695CD]' : 'border-t-[#F5897C]'"
+          :class="currentBlock >= 1800 ? 'border-t-[#7695CD]' : 'border-t-[#F5897C]'"
         >
           <div class="space-y-4">
             <div class="flex items-center justify-between gap-2">
               <span class="font-mono text-xs font-extrabold px-2.5 py-1 rounded-lg bg-coral-400/15 text-coral-700 dark:text-coral-300">
-                BLOCK 2,000
+                BLOCK 1,800
               </span>
               <span
                 class="text-xs font-bold px-2.5 py-0.5 rounded-full border"
-                :class="currentBlock >= 2000
+                :class="currentBlock >= 1800
                   ? 'bg-cobalt-400/15 text-cobalt-700 dark:text-cobalt-300 border-cobalt-400/30'
                   : 'bg-coral-400/15 text-coral-700 dark:text-coral-300 border-coral-400/30'"
               >
-                {{ currentBlock >= 2000 ? (locale === 'tr' ? 'Aktif' : 'Active') : (locale === 'tr' ? 'Sıradaki' : 'Next Phase') }}
+                {{ currentBlock >= 1800 ? (locale === 'tr' ? 'Aktif' : 'Active') : (locale === 'tr' ? 'Sıradaki' : 'Next Phase') }}
               </span>
             </div>
             <h3 class="text-lg font-extrabold text-slate-800 dark:text-white">
@@ -1361,7 +1361,7 @@ const researchPapers = computed(() => {
           <div class="pt-4 mt-6 border-t border-cobalt-200/50 dark:border-slate-800 flex items-center justify-between text-xs font-mono text-slate-500">
             <span>BLST secp256k1</span>
             <span class="text-coral-600 dark:text-coral-400 font-bold">
-              {{ currentBlock >= 2000 ? '100%' : `${Math.min(99, Math.floor((currentBlock / 2000) * 100))}%` }}
+              {{ currentBlock >= 1800 ? '100%' : `${Math.min(99, Math.floor((currentBlock / 1800) * 100))}%` }}
             </span>
           </div>
         </div>
