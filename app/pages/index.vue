@@ -1,6 +1,16 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from '~/composables/useI18n'
+import {
+  calculateNextMilestone,
+  calculateTotalBlockReward,
+  calculateEmissionEpochLabel,
+  calculateModelDSplits,
+  calculateRewardAmounts,
+  generateMescalBytecode,
+  sanitizeBlockHeight,
+  MASTERNODE_COLLATERAL
+} from '~/utils/protocol'
 
 const { locale, t } = useI18n()
 
@@ -10,68 +20,35 @@ const { data: statusData, refresh } = await useFetch('/api/status', {
 })
 
 // 1. Live Blockchain & Milestone Telemetry
-const currentBlock = ref(statusData.value?.height ?? 997)
+const currentBlock = ref(sanitizeBlockHeight(statusData.value?.height, 997))
 const masternodesCount = computed(() => statusData.value?.masternodes?.enabled ?? 0)
 const circulatingSupply = computed(() => statusData.value?.totalSupply ?? 19800)
 
-const nextMilestone = computed(() => {
-  const h = currentBlock.value
-  const isTr = locale.value === 'tr'
-  if (h < 200) {
-    return {
-      target: 200,
-      prev: 1,
-      eraName: isTr ? 'Aşama 1: Genesis ve MESCAL' : 'Phase 1: Genesis & MESCAL',
-      nextName: isTr ? 'Aşama 2: PoS ve ADAM (Blok 200)' : 'Phase 2: PoS & ADAM (Block 200)',
-      remaining: 200 - h,
-      progress: Math.min(100, Math.max(2, (h / 200) * 100))
-    }
-  }
-  if (h < 2000) {
-    return {
-      target: 2000,
-      prev: 200,
-      eraName: isTr ? 'Aşama 2 Aktif: PoS + ADAM VRF' : 'Phase 2 Active: PoS + ADAM VRF',
-      nextName: isTr ? 'Aşama 3: PoBLS Çekilişi (Blok 2.000)' : 'Phase 3: PoBLS Lottery (Block 2,000)',
-      remaining: 2000 - h,
-      progress: Math.min(100, Math.max(5, ((h - 200) / 1800) * 100))
-    }
-  }
-  if (h < 2200) {
-    return {
-      target: 2200,
-      prev: 2000,
-      eraName: isTr ? 'Aşama 3 Aktif: PoBLS Eşik Çekilişi' : 'Phase 3 Active: PoBLS Threshold Lottery',
-      nextName: isTr ? 'Aşama 4: Model D Dağılımı (Blok 2.200)' : 'Phase 4: Model D Splits (Block 2,200)',
-      remaining: 2200 - h,
-      progress: Math.min(100, Math.max(5, ((h - 2000) / 200) * 100))
-    }
-  }
-  return {
-    target: 10000,
-    prev: 2200,
-    eraName: isTr ? 'Aşama 4 Aktif: Tam Model D Konsensüsü' : 'Phase 4 Active: Full Model D Consensus',
-    nextName: isTr ? 'Standart Emisyon (Blok 10.000)' : 'Standard Emission (Block 10,000)',
-    remaining: Math.max(0, 10000 - h),
-    progress: Math.min(100, Math.max(10, ((h - 2200) / 7800) * 100))
-  }
-})
+const nextMilestone = computed(() => calculateNextMilestone(currentBlock.value, locale.value))
 
 function scrollToSection(id) {
   const element = document.getElementById(id)
   if (element) {
-    element.scrollIntoView({ behavior: 'smooth' })
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    element.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' })
   }
 }
 
-let timer = null
+let statusPollTimer = null
+let consensusInterval = null
+let consensusTimeout = null
+let lotteryInterval = null
+let copyTimeout = null
 
 onMounted(() => {
-  timer = setInterval(async () => {
+  statusPollTimer = setInterval(async () => {
     try {
       await refresh()
       if (statusData.value?.success && typeof statusData.value?.height === 'number') {
-        currentBlock.value = statusData.value.height
+        currentBlock.value = sanitizeBlockHeight(statusData.value.height, currentBlock.value)
       }
     } catch (e) {
       console.error('Error refreshing block status:', e)
@@ -80,9 +57,11 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  if (timer) {
-    clearInterval(timer)
-  }
+  if (statusPollTimer) clearInterval(statusPollTimer)
+  if (consensusInterval) clearInterval(consensusInterval)
+  if (consensusTimeout) clearTimeout(consensusTimeout)
+  if (lotteryInterval) clearInterval(lotteryInterval)
+  if (copyTimeout) clearTimeout(copyTimeout)
 })
 
 // 2. Interactive Feature: ADAM Consensus Simulator
@@ -108,16 +87,21 @@ const consensusSteps = computed(() =>
 
 function startConsensusSim() {
   if (isSimulatingConsensus.value) return
+  if (consensusInterval) clearInterval(consensusInterval)
+  if (consensusTimeout) clearTimeout(consensusTimeout)
+
   isSimulatingConsensus.value = true
   consensusStep.value = 0
-  const interval = setInterval(() => {
+  consensusInterval = setInterval(() => {
     if (consensusStep.value < consensusSteps.value.length - 1) {
       consensusStep.value++
     } else {
-      clearInterval(interval)
-      setTimeout(() => {
+      clearInterval(consensusInterval)
+      consensusInterval = null
+      consensusTimeout = setTimeout(() => {
         isSimulatingConsensus.value = false
         consensusStep.value = -1
+        consensusTimeout = null
       }, 1800)
     }
   }, 950)
@@ -138,17 +122,19 @@ const candidates = [
 
 function runLottery() {
   if (isLotteryRunning.value) return
-  isLotteryRunning.value = true
+  if (lotteryInterval) clearInterval(lotteryInterval)
 
+  isLotteryRunning.value = true
   let counter = 0
-  const interval = setInterval(() => {
+  lotteryInterval = setInterval(() => {
     selectedCommittee.value = Array.from(
       { length: 3 },
       () => candidates[Math.floor(Math.random() * candidates.length)]
     )
     counter++
     if (counter > 10) {
-      clearInterval(interval)
+      clearInterval(lotteryInterval)
+      lotteryInterval = null
       const shuffled = [...candidates].sort(() => 0.5 - Math.random())
       selectedCommittee.value = shuffled.slice(0, 3)
       isLotteryRunning.value = false
@@ -165,40 +151,19 @@ const mescalParams = ref({
   refundAddress: 'KTNrvQkwv1Yo...CYv'
 })
 
-const mescalBytecode = computed(() => {
-  if (mescalTemplate.value === 'escrow') {
-    return `OP_INIT_CONTRACT "COIN_LOCK_MINER"
-OP_CHECK_COLLATERAL ${mescalParams.value.amount}_KRISTA
-OP_PUSH_TIMEOUT ${mescalParams.value.locktime}_BLOCKS
-OP_IF_EXPIRED
-  OP_RETURN_TO_OWNER "${mescalParams.value.refundAddress}"
-OP_ELSE
-  OP_REGISTER_MINER_ELIGIBILITY
-OP_ENDIF`
-  } else if (mescalTemplate.value === 'vesting') {
-    return `OP_INIT_CONTRACT "LINEAR_VESTING"
-OP_SET_VESTING_START BLOCK_CURRENT
-OP_PUSH_RATE 20_PERCENT_PER_YEAR
-OP_CHECK_TIMELOCK 730_DAYS
-OP_CLAIM_PROPORTIONAL_RELEASE
-OP_END_CONTRACT`
-  } else {
-    return `OP_INIT_CONTRACT "ASSET_TOKENIZATION"
-OP_MINT_ASSET "KRISTA_TICKET"
-OP_SET_MAX_SUPPLY 100000000
-OP_MINT_TO_SENDER 5000000
-OP_LOCK_IMMUTABLE_METADATA
-OP_END_CONTRACT`
-  }
-})
+const mescalBytecode = computed(() =>
+  generateMescalBytecode(mescalTemplate.value, mescalParams.value)
+)
 
 async function copyMescalBytecode() {
   try {
     if (import.meta.client && navigator.clipboard) {
       await navigator.clipboard.writeText(mescalBytecode.value)
       copiedBytecode.value = true
-      setTimeout(() => {
+      if (copyTimeout) clearTimeout(copyTimeout)
+      copyTimeout = setTimeout(() => {
         copiedBytecode.value = false
+        copyTimeout = null
       }, 2000)
     }
   } catch {
@@ -218,77 +183,23 @@ const heightPresets = [
 ]
 
 const sliderProgressPercent = computed(() => {
-  const val = Math.min(3500000, Math.max(1, Number(calcHeight.value) || 1))
+  const val = Math.min(3500000, Math.max(1, sanitizeBlockHeight(calcHeight.value, 1)))
   return `${((val - 1) / (3500000 - 1)) * 100}%`
 })
 
-const totalReward = computed(() => {
-  const h = Number(calcHeight.value)
-  if (h <= 1) return 0
-  if (h < 10000) return 100
+const totalReward = computed(() => calculateTotalBlockReward(calcHeight.value))
+const emissionEpochLabel = computed(() => calculateEmissionEpochLabel(calcHeight.value, locale.value))
+const splitPercentages = computed(() => calculateModelDSplits(calcHeight.value))
+const rewardAmounts = computed(() => calculateRewardAmounts(calcHeight.value))
 
-  const period = Math.floor((h - 10000) / 259200)
-  const subsidy = 15.0 * Math.pow(0.981, period)
-  return Math.max(0, parseFloat((Math.floor(subsidy * 1e8 + 0.5) / 1e8).toFixed(8)))
-})
+const devRewardAmount = computed(() => rewardAmounts.value.dev)
+const faucetRewardAmount = computed(() => rewardAmounts.value.faucet)
+const mnRewardAmount = computed(() => rewardAmounts.value.mn)
+const quorumRewardAmount = computed(() => rewardAmounts.value.quorum)
+const participantsRewardAmount = computed(() => rewardAmounts.value.participants)
+const producerRewardAmount = computed(() => rewardAmounts.value.producer)
 
-const emissionEpochLabel = computed(() => {
-  const h = Number(calcHeight.value)
-  const isTr = locale.value === 'tr'
-  if (h <= 1) return isTr ? 'Genesis Bloğu (0 Premine)' : 'Genesis Block (0 Premine)'
-  if (h < 2200) return isTr ? 'Erken Başlangıç Dönemi (100 KRISTA)' : 'Early Bootstrap Era (100 KRISTA)'
-  if (h < 10000) return isTr ? 'Model D Başlangıç Dönemi (100 KRISTA)' : 'Model D Bootstrap Era (100 KRISTA)'
-  const period = Math.floor((h - 10000) / 259200) + 1
-  return isTr ? `Standart Emisyon • Çeyrek #${period} (%1.9 Azalma)` : `Standard Emission • Quarter #${period} (1.9% Decay)`
-})
-
-const splitPercentages = computed(() => {
-  const h = Number(calcHeight.value)
-
-  if (h <= 1) {
-    return {
-      dev: 0.0,
-      faucet: 0.0,
-      mn: 0.0,
-      quorum: 0.0,
-      participants: 0.0,
-      producer: 0.0
-    }
-  }
-
-  const devPercent = 7.0
-  const faucetPercent = h <= 50000 ? 0.7 : 0.0
-  const remaining = 100.0 - devPercent - faucetPercent
-
-  if (h >= 2200) {
-    return {
-      dev: devPercent,
-      faucet: faucetPercent,
-      mn: parseFloat((remaining * 0.50).toFixed(4)),
-      quorum: parseFloat((remaining * 0.10).toFixed(4)),
-      participants: parseFloat((remaining * 0.25).toFixed(4)),
-      producer: parseFloat((remaining * 0.15).toFixed(4))
-    }
-  }
-
-  return {
-    dev: devPercent,
-    faucet: faucetPercent,
-    mn: 0.0,
-    quorum: 0.0,
-    participants: 0.0,
-    producer: remaining
-  }
-})
-
-const devRewardAmount = computed(() => parseFloat((totalReward.value * (splitPercentages.value.dev / 100)).toFixed(4)))
-const faucetRewardAmount = computed(() => parseFloat((totalReward.value * (splitPercentages.value.faucet / 100)).toFixed(4)))
-const mnRewardAmount = computed(() => parseFloat((totalReward.value * (splitPercentages.value.mn / 100)).toFixed(4)))
-const quorumRewardAmount = computed(() => parseFloat((totalReward.value * (splitPercentages.value.quorum / 100)).toFixed(4)))
-const participantsRewardAmount = computed(() => parseFloat((totalReward.value * (splitPercentages.value.participants / 100)).toFixed(4)))
-const producerRewardAmount = computed(() => parseFloat((totalReward.value * (splitPercentages.value.producer / 100)).toFixed(4)))
-
-const requiredCollateral = computed(() => 2100)
+const requiredCollateral = computed(() => MASTERNODE_COLLATERAL)
 
 // Strictly harmonious logo-derived palette for all 6 reward segments
 const allocationRows = computed(() => [
@@ -838,7 +749,10 @@ const researchPapers = computed(() => {
               </div>
             </div>
 
-            <div class="bg-white/90 dark:bg-slate-900/90 rounded-xl p-3 min-h-[60px] flex items-center text-xs font-mono border border-cobalt-200/70 dark:border-slate-800">
+            <div
+              aria-live="polite"
+              class="bg-white/90 dark:bg-slate-900/90 rounded-xl p-3 min-h-[60px] flex items-center text-xs font-mono border border-cobalt-200/70 dark:border-slate-800"
+            >
               <span v-if="consensusStep >= 0" class="text-cobalt-700 dark:text-coral-300 font-semibold">
                 &gt; {{ consensusSteps[consensusStep] }}
               </span>
@@ -984,6 +898,8 @@ const researchPapers = computed(() => {
                 <input
                   id="mescal-collateral-input"
                   type="number"
+                  min="1"
+                  max="210000000"
                   v-model="mescalParams.amount"
                   class="bg-white dark:bg-slate-900 border border-cobalt-200/80 dark:border-slate-700 rounded-lg px-2.5 py-1 mt-1 text-slate-800 dark:text-white font-mono text-xs font-semibold"
                 />
@@ -993,6 +909,8 @@ const researchPapers = computed(() => {
                 <input
                   id="mescal-locktime-input"
                   type="number"
+                  min="1"
+                  max="5256000"
                   v-model="mescalParams.locktime"
                   class="bg-white dark:bg-slate-900 border border-cobalt-200/80 dark:border-slate-700 rounded-lg px-2.5 py-1 mt-1 text-slate-800 dark:text-white font-mono text-xs font-semibold"
                 />
@@ -1035,7 +953,7 @@ const researchPapers = computed(() => {
               </span>
             </div>
 
-            <ul class="spec-list mt-2">
+            <ul role="list" class="spec-list mt-2">
               <li
                 v-for="spec in chainSpecs"
                 :key="spec.label"

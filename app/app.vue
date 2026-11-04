@@ -1,26 +1,29 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useI18n } from '~/composables/useI18n'
+import { sanitizeTheme, sanitizeLocale } from '~/utils/protocol'
 
 const { locale, setLocale, t } = useI18n()
 
 const themeCookie = useCookie('kristatech_theme', {
   maxAge: 365 * 24 * 60 * 60,
+  sameSite: 'lax',
+  path: '/',
   default: () => 'light'
 })
 
-const isDark = computed(() => themeCookie.value === 'dark')
+const isDark = computed(() => sanitizeTheme(themeCookie.value, 'light') === 'dark')
 
 function toggleTheme() {
   themeCookie.value = isDark.value ? 'light' : 'dark'
   if (import.meta.client) {
-    document.documentElement.classList.toggle('dark', themeCookie.value === 'dark')
+    document.documentElement.classList.toggle('dark', isDark.value)
   }
 }
 
 useHead({
   htmlAttrs: {
-    lang: computed(() => locale.value || 'tr'),
+    lang: computed(() => sanitizeLocale(locale.value, 'tr')),
     class: computed(() => (isDark.value ? 'dark' : ''))
   },
   title: computed(() => `KristaTech (KRISTA) | ${t('brandTagline')}`),
@@ -40,6 +43,12 @@ const activeSection = ref('features')
 const sections = ['features', 'specs', 'tokenomics', 'roadmap', 'docs']
 const isMobileMenuOpen = ref(false)
 const isDocsDropdownOpen = ref(false)
+
+function handleDocsDropdownFocusOut(event) {
+  if (event.currentTarget && !event.currentTarget.contains(event.relatedTarget)) {
+    isDocsDropdownOpen.value = false
+  }
+}
 
 const documentsList = computed(() => {
   const isTr = locale.value === 'tr'
@@ -107,7 +116,11 @@ function scrollToSection(id) {
   isDocsDropdownOpen.value = false
   const element = document.getElementById(id)
   if (element) {
-    element.scrollIntoView({ behavior: 'smooth' })
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    element.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' })
   }
 }
 
@@ -140,7 +153,7 @@ watch(isMobileMenuOpen, (open) => {
 })
 
 onMounted(() => {
-  document.documentElement.classList.toggle('dark', themeCookie.value === 'dark')
+  document.documentElement.classList.toggle('dark', isDark.value)
   window.addEventListener('scroll', handleScroll, { passive: true })
   window.addEventListener('keydown', handleKeydown)
 })
@@ -148,6 +161,9 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
   window.removeEventListener('keydown', handleKeydown)
+  if (import.meta.client) {
+    document.body.style.overflow = ''
+  }
 })
 </script>
 
@@ -252,6 +268,8 @@ onUnmounted(() => {
             class="relative group"
             @mouseenter="isDocsDropdownOpen = true"
             @mouseleave="isDocsDropdownOpen = false"
+            @focusin="isDocsDropdownOpen = true"
+            @focusout="handleDocsDropdownFocusOut"
           >
             <button
               type="button"
@@ -269,6 +287,7 @@ onUnmounted(() => {
             </button>
 
             <div
+              :inert="!isDocsDropdownOpen || undefined"
               class="absolute left-0 top-full pt-2.5 w-76 transition-all duration-200 z-50"
               :class="isDocsDropdownOpen ? 'opacity-100 pointer-events-auto translate-y-0' : 'opacity-0 pointer-events-none -translate-y-1'"
             >
@@ -575,7 +594,7 @@ onUnmounted(() => {
             <h2 class="text-xs font-bold uppercase tracking-wider text-cobalt-600 dark:text-cobalt-300">
               {{ locale === 'tr' ? 'Platform' : 'Platform' }}
             </h2>
-            <ul class="space-y-2.5 text-sm">
+            <ul role="list" class="space-y-2.5 text-sm">
               <li>
                 <button type="button" @click="scrollToSection('features')" class="text-slate-500 dark:text-slate-400 hover:text-cobalt-700 dark:hover:text-white transition-colors cursor-pointer">
                   {{ t('navFeatures') }}
@@ -609,7 +628,7 @@ onUnmounted(() => {
             <h2 class="text-xs font-bold uppercase tracking-wider text-coral-600 dark:text-coral-300">
               {{ t('navDocuments') }}
             </h2>
-            <ul class="space-y-2 text-sm">
+            <ul role="list" class="space-y-2 text-sm">
               <li v-for="doc in documentsList.slice(0, 6)" :key="doc.id">
                 <a
                   :href="doc.href"
@@ -628,7 +647,7 @@ onUnmounted(() => {
             <h2 class="text-xs font-bold uppercase tracking-wider text-cobalt-600 dark:text-cobalt-300">
               {{ locale === 'tr' ? 'Ağ ve Ekosistem' : 'Network & Ecosystem' }}
             </h2>
-            <ul class="space-y-2.5 text-sm">
+            <ul role="list" class="space-y-2.5 text-sm">
               <li>
                 <a
                   href="https://explorer.kristalteknoloji.com"

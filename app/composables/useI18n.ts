@@ -1,5 +1,8 @@
-const translations: Record<string, Record<string, string>> = {
-  en: {
+import { computed } from 'vue'
+import { sanitizeLocale, resolveInitialLocale, type Locale } from '../utils/protocol.ts'
+
+export const translations: Readonly<Record<Locale, Readonly<Record<string, string>>>> = Object.freeze({
+  en: Object.freeze({
     brandName: 'KRISTA',
     brandTagline: 'Cooperative Consensus & Smart Contracts',
     skipToContent: 'Skip to main content',
@@ -69,8 +72,8 @@ const translations: Record<string, Record<string, string>> = {
     currentSupply: 'Circulating Supply',
     networkTps: 'Throughput & Block Time',
     cryptoSecurity: 'Cryptographic Security'
-  },
-  tr: {
+  }),
+  tr: Object.freeze({
     brandName: 'KRISTA',
     brandTagline: 'Kooperatif Konsensüs ve Akıllı Sözleşmeler',
     skipToContent: 'Ana içeriğe geç',
@@ -140,45 +143,53 @@ const translations: Record<string, Record<string, string>> = {
     currentSupply: 'Dolaşımdaki Arz',
     networkTps: 'Kapasite ve Blok Süresi',
     cryptoSecurity: 'Kriptografik Güvenlik'
+  })
+})
+
+export function translate(localeInput: unknown, key: string): string {
+  if (typeof key !== 'string' || key.length === 0) {
+    return ''
   }
+  const safeLocale = sanitizeLocale(localeInput, 'tr')
+  const dict = translations[safeLocale]
+  if (Object.hasOwn(dict, key)) {
+    return dict[key]
+  }
+  if (Object.hasOwn(translations.en, key)) {
+    return translations.en[key]
+  }
+  return key
 }
 
 export function useI18n() {
-  const currentLocale = useCookie('kristatech_locale', {
+  const rawLocaleCookie = useCookie<string>('kristatech_locale', {
     maxAge: 30 * 24 * 60 * 60, // 30 days
+    sameSite: 'lax',
+    path: '/',
     default: () => {
-      if (process.server) {
+      if (import.meta.server) {
         const headers = useRequestHeaders(['accept-language'])
-        const acceptLanguage = headers['accept-language']
-        if (acceptLanguage) {
-          const preferred = acceptLanguage.split(',')[0].slice(0, 2)
-          if (['en', 'tr'].includes(preferred)) {
-            return preferred
-          }
-        }
-      } else if (process.client) {
-        const browserLang = navigator.language.slice(0, 2)
-        if (['en', 'tr'].includes(browserLang)) {
-          return browserLang
-        }
+        return resolveInitialLocale(headers['accept-language'], null, 'tr')
+      }
+      if (import.meta.client && typeof navigator !== 'undefined') {
+        return resolveInitialLocale(null, navigator.language, 'tr')
       }
       return 'tr'
     }
   })
 
-  const setLocale = (locale: string) => {
-    if (['en', 'tr'].includes(locale)) {
-      currentLocale.value = locale
+  const safeLocale = computed<Locale>(() => sanitizeLocale(rawLocaleCookie.value, 'tr'))
+
+  const setLocale = (nextLocale: unknown) => {
+    if (nextLocale === 'en' || nextLocale === 'tr') {
+      rawLocaleCookie.value = nextLocale
     }
   }
 
-  const t = (key: string): string => {
-    const dict = translations[currentLocale.value || 'tr'] || translations.en
-    return dict[key] || key
-  }
+  const t = (key: string): string => translate(safeLocale.value, key)
 
   return {
-    locale: currentLocale,
+    locale: safeLocale,
     setLocale,
     t
   }
