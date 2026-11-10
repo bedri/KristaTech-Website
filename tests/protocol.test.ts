@@ -72,18 +72,18 @@ describe('Protocol & Cryptoeconomic Utilities (app/utils/protocol.ts)', () => {
       assert.match(m.eraName, /Aşama 1/)
     })
 
-    it('computes Phase 2 milestone for blocks 200..1799', () => {
-      const m = calculateNextMilestone(1000, 'en')
-      assert.equal(m.target, 1800)
-      assert.equal(m.remaining, 800)
+    it('computes Phase 2 milestone for blocks 200..1999', () => {
+      const m = calculateNextMilestone(1100, 'en')
+      assert.equal(m.target, 2000)
+      assert.equal(m.remaining, 900)
       assert.equal(m.progress, 50)
       assert.match(m.eraName, /Phase 2 Active/)
     })
 
-    it('computes Phase 3 milestone for blocks 1800..2199', () => {
-      const m = calculateNextMilestone(2000, 'en')
+    it('computes Phase 3 milestone for blocks 2000..2199', () => {
+      const m = calculateNextMilestone(2100, 'en')
       assert.equal(m.target, 2200)
-      assert.equal(m.remaining, 200)
+      assert.equal(m.remaining, 100)
       assert.equal(m.progress, 50)
       assert.match(m.eraName, /Phase 3 Active/)
     })
@@ -107,13 +107,18 @@ describe('Protocol & Cryptoeconomic Utilities (app/utils/protocol.ts)', () => {
       assert.match(calculateEmissionEpochLabel(1, 'en'), /Genesis Block/)
     })
 
-    it('returns 100 KRISTA during Bootstrap Era (blocks 2..9999)', () => {
-      assert.equal(calculateTotalBlockReward(2), 100)
-      assert.equal(calculateTotalBlockReward(500), 100)
-      assert.equal(calculateTotalBlockReward(2200), 100)
-      assert.equal(calculateTotalBlockReward(9999), 100)
+    it('returns graduated 40 -> 30 -> 20 KRISTA during Bootstrap Era (blocks 2..9999)', () => {
+      assert.equal(calculateTotalBlockReward(2), 40)
+      assert.equal(calculateTotalBlockReward(500), 40)
+      assert.equal(calculateTotalBlockReward(2200), 40)
+      assert.equal(calculateTotalBlockReward(2201), 30)
+      assert.equal(calculateTotalBlockReward(5000), 30)
+      assert.equal(calculateTotalBlockReward(5001), 20)
+      assert.equal(calculateTotalBlockReward(9999), 20)
       assert.match(calculateEmissionEpochLabel(500, 'tr'), /Erken Başlangıç/)
-      assert.match(calculateEmissionEpochLabel(2200, 'en'), /Model D Bootstrap/)
+      assert.match(calculateEmissionEpochLabel(2200, 'en'), /Model D Bootstrap Era \(40 KRISTA\)/)
+      assert.match(calculateEmissionEpochLabel(3500, 'en'), /Model D Bootstrap Era \(30 KRISTA\)/)
+      assert.match(calculateEmissionEpochLabel(7500, 'en'), /Model D Transition Era \(20 KRISTA\)/)
     })
 
     it('returns 15 KRISTA at Standard Emission start (block 10000) and applies 1.9% quarterly geometric decay', () => {
@@ -148,22 +153,22 @@ describe('Protocol & Cryptoeconomic Utilities (app/utils/protocol.ts)', () => {
       assert.equal(parseFloat(sum.toFixed(4)), 100)
     })
 
-    it('activates Model D 50/25/15/10 pool splits at block 2200 with faucet active', () => {
+    it('activates Model D 35/40/15/10 pool splits at block 2200 with faucet active', () => {
       const splits = calculateModelDSplits(2200)
       assert.equal(splits.dev, 7.0)
       assert.equal(splits.faucet, 0.7)
       // Remaining = 92.3%
-      assert.equal(splits.mn, 46.15)
-      assert.equal(splits.participants, 23.075)
+      assert.equal(splits.mn, 32.305)
+      assert.equal(splits.participants, 36.92)
       assert.equal(splits.producer, 13.845)
       assert.equal(splits.quorum, 9.23)
       const sum = splits.dev + splits.faucet + splits.mn + splits.quorum + splits.participants + splits.producer
       assert.equal(parseFloat(sum.toFixed(4)), 100)
 
       const amounts = calculateRewardAmounts(2200)
-      assert.equal(amounts.total, 100)
-      assert.equal(amounts.mn, 46.15)
-      assert.equal(amounts.dev, 7.0)
+      assert.equal(amounts.total, 40)
+      assert.equal(amounts.mn, 12.922)
+      assert.equal(amounts.dev, 2.8)
     })
 
     it('terminates the 0.7% bootstrap faucet after block 50,000', () => {
@@ -174,8 +179,8 @@ describe('Protocol & Cryptoeconomic Utilities (app/utils/protocol.ts)', () => {
       assert.equal(after50k.faucet, 0.0)
       assert.equal(after50k.dev, 7.0)
       // Remaining = 93.0%
-      assert.equal(after50k.mn, 46.5)
-      assert.equal(after50k.participants, 23.25)
+      assert.equal(after50k.mn, 32.55)
+      assert.equal(after50k.participants, 37.2)
       assert.equal(after50k.producer, 13.95)
       assert.equal(after50k.quorum, 9.3)
       const sum =

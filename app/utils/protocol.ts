@@ -81,25 +81,25 @@ export function calculateNextMilestone(heightInput: unknown, localeInput: unknow
     }
   }
 
-  if (h < 1800) {
+  if (h < 2000) {
     return {
-      target: 1800,
+      target: 2000,
       prev: 200,
       eraName: isTr ? 'Aşama 2 Aktif: PoS + ADAM VRF' : 'Phase 2 Active: PoS + ADAM VRF',
-      nextName: isTr ? 'Aşama 3: PoBLS Çekilişi (Blok 1.800)' : 'Phase 3: PoBLS Lottery (Block 1,800)',
-      remaining: 1800 - h,
-      progress: Math.min(100, Math.max(5, ((h - 200) / 1600) * 100))
+      nextName: isTr ? 'Aşama 3: PoBLS Çekilişi (Blok 2.000)' : 'Phase 3: PoBLS Lottery (Block 2,000)',
+      remaining: 2000 - h,
+      progress: Math.min(100, Math.max(5, ((h - 200) / 1800) * 100))
     }
   }
 
   if (h < 2200) {
     return {
       target: 2200,
-      prev: 1800,
+      prev: 2000,
       eraName: isTr ? 'Aşama 3 Aktif: PoBLS Eşik Çekilişi' : 'Phase 3 Active: PoBLS Threshold Lottery',
       nextName: isTr ? 'Aşama 4: Model D Dağılımı (Blok 2.200)' : 'Phase 4: Model D Splits (Block 2,200)',
       remaining: 2200 - h,
-      progress: Math.min(100, Math.max(5, ((h - 1800) / 400) * 100))
+      progress: Math.min(100, Math.max(5, ((h - 2000) / 200) * 100))
     }
   }
 
@@ -138,7 +138,9 @@ export function calculateTotalBlockReward(heightInput: unknown): number {
   }
   const h = sanitizeBlockHeight(raw, 1)
   if (h <= 1) return 0
-  if (h < 10000) return 100
+  if (h <= 2200) return 40
+  if (h <= 5000) return 30
+  if (h < 10000) return 20
 
   const period = Math.floor((h - 10000) / 259200)
   const subsidy = 15.0 * Math.pow(0.981, period)
@@ -154,8 +156,10 @@ export function calculateEmissionEpochLabel(heightInput: unknown, localeInput: u
   }
 
   const h = sanitizeBlockHeight(raw, 1)
-  if (h < 2200) return isTr ? 'Erken Başlangıç Dönemi (100 KRISTA)' : 'Early Bootstrap Era (100 KRISTA)'
-  if (h < 10000) return isTr ? 'Model D Başlangıç Dönemi (100 KRISTA)' : 'Model D Bootstrap Era (100 KRISTA)'
+  if (h < 2200) return isTr ? 'Erken Başlangıç Dönemi (40 KRISTA)' : 'Early Bootstrap Era (40 KRISTA)'
+  if (h === 2200) return isTr ? 'Model D Başlangıç Dönemi (40 KRISTA)' : 'Model D Bootstrap Era (40 KRISTA)'
+  if (h <= 5000) return isTr ? 'Model D Başlangıç Dönemi (30 KRISTA)' : 'Model D Bootstrap Era (30 KRISTA)'
+  if (h < 10000) return isTr ? 'Model D Geçiş Dönemi (20 KRISTA)' : 'Model D Transition Era (20 KRISTA)'
 
   const period = Math.floor((h - 10000) / 259200) + 1
   return isTr
@@ -194,9 +198,9 @@ export function calculateModelDSplits(heightInput: unknown): ModelDSplitPercenta
     return {
       dev: devPercent,
       faucet: faucetPercent,
-      mn: parseFloat((remaining * 0.50).toFixed(4)),
+      mn: parseFloat((remaining * 0.35).toFixed(4)),
       quorum: parseFloat((remaining * 0.10).toFixed(4)),
-      participants: parseFloat((remaining * 0.25).toFixed(4)),
+      participants: parseFloat((remaining * 0.40).toFixed(4)),
       producer: parseFloat((remaining * 0.15).toFixed(4))
     }
   }
@@ -254,12 +258,12 @@ export function sanitizeMescalParams(input: MescalParamsInput = {}): SanitizedMe
   const rawAmount = typeof input.amount === 'number' ? input.amount : Number(input.amount)
   const amount = Number.isFinite(rawAmount)
     ? Math.max(1, Math.min(MAX_SUPPLY_KRISTA, Math.floor(rawAmount)))
-    : 1000
+    : 250
 
   const rawLocktime = typeof input.locktime === 'number' ? input.locktime : Number(input.locktime)
   const locktime = Number.isFinite(rawLocktime)
     ? Math.max(1, Math.min(MAX_LOCKTIME_BLOCKS, Math.floor(rawLocktime)))
-    : 2880
+    : 2900
 
   const rawAddress = typeof input.refundAddress === 'string' ? input.refundAddress : ''
   const cleanedAddress = rawAddress.replace(/[^a-zA-Z0-9._]/g, '').slice(0, 64)

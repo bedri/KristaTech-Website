@@ -72,15 +72,15 @@ const consensusSteps = computed(() =>
     ? [
         'Önceki bloktan VRF tohumu (rolling-seed) üretiliyor...',
         'Komite seçiliyor: 11 Madenci + 1 Koordinatör...',
-        '13 dinamik ASIC-dirençli bulmaca doğrulanıyor (X11KVS/Hamsi/Fugue)...',
-        'BLST secp256k1 imza payları birleştiriliyor...',
+        '18 dinamik ASIC-dirençli bulmaca ve 3\'lü permütasyon doğrulanıyor (X11KVS/Hamsi/Fugue)...',
+        'BLS12-381 ve secp256k1 imza payları birleştiriliyor...',
         'Blok doğrulandı ve KRISTA zincirine işlendi!'
       ]
     : [
         'Generating VRF rolling-seed from previous block...',
         'Electing round committee (11 Miners, 1 Coordinator)...',
-        'Verifying 13 dynamic ASIC-resistant puzzles (X11KVS/Hamsi/Fugue)...',
-        'Aggregating BLS signature shares (supranational/blst)...',
+        'Verifying 18 dynamic ASIC-resistant puzzles & 3-permutation VRF (X11KVS/Hamsi/Fugue)...',
+        'Aggregating BLS12-381 & secp256k1 signature shares (supranational/blst)...',
         'Block verified and committed to KRISTA chain!'
       ]
 )
@@ -146,8 +146,8 @@ function runLottery() {
 const mescalTemplate = ref('escrow')
 const copiedBytecode = ref(false)
 const mescalParams = ref({
-  amount: 1000,
-  locktime: 2880,
+  amount: 250,
+  locktime: 2900,
   refundAddress: 'KTNrvQkwv1Yo...CYv'
 })
 
@@ -267,7 +267,7 @@ const chainSpecs = computed(() => {
     },
     {
       label: isTr ? 'Madencilik Algoritmaları' : 'Mining Algorithms',
-      value: isTr ? '13 Dinamik Algoritma (X11KVS, Hamsi, Fugue, Shabal, Haval-256...)' : '13 Dynamic Algorithms (X11KVS, Hamsi, Fugue, Shabal, Haval-256...)'
+      value: isTr ? '18 Dinamik Algoritma + 3\'lü Permütasyon (X11KVS, Hamsi, Fugue, Shabal, Whirlpool, Haval-256...)' : '18 Dynamic Algorithms + 3-Permutation VRF (X11KVS, Hamsi, Fugue, Shabal, Whirlpool, Haval-256...)'
     },
     {
       label: isTr ? 'Kriptografik İmza ve Eğri' : 'Cryptographic Curve & Signatures',
@@ -308,7 +308,7 @@ const researchPapers = computed(() => {
     },
     {
       code: 'DOC-02',
-      badge: 'VRF + 13 ALGO',
+      badge: 'VRF + 18 ALGO',
       accent: 'coral',
       title: isTr ? 'ADAM Konsensüs Protokolü' : 'ADAM Consensus Specification',
       desc: isTr
@@ -322,8 +322,8 @@ const researchPapers = computed(() => {
       accent: 'cobalt',
       title: isTr ? 'Proof of BLS (PoBLS) Konsensüsü' : 'Proof of BLS (PoBLS) Consensus',
       desc: isTr
-        ? 'Supranational/blst kütüphanesi ile secp256k1 üzerinde çalışan manipüle edilemez eşik çekiliş sistemi.'
-        : 'Cryptographic threshold lottery powered by supranational/blst for unbiasable quorum verification.',
+        ? 'Supranational/blst kütüphanesi ile BLS12-381 ve secp256k1 üzerinde çalışan manipüle edilemez eşik çekiliş sistemi.'
+        : 'Cryptographic threshold lottery powered by supranational/blst (BLS12-381 + secp256k1) for unbiasable quorum verification.',
       href: `${base}/${isTr ? 'PoBLS_Consensus_TR.md' : 'PoBLS_Consensus.md'}`
     },
     {
@@ -342,8 +342,8 @@ const researchPapers = computed(() => {
       accent: 'cobalt',
       title: isTr ? 'Token Ekonomisi Çalışması' : 'Tokenomics & Model D Study',
       desc: isTr
-        ? '%50 pasif Masternode, %25 doğrulayıcı seti, %15 blok üreticisi ve %10 aktif quorum ödül matematiği.'
-        : 'Economic modeling of the 50% Masternode, 25% Validator Set, 15% Producer, and 10% Quorum split engine.',
+        ? '%35 pasif Masternode, %40 doğrulayıcı komitesi (%20 MN + %8 Coin-Lock + %12 PoW), %15 blok üreticisi, %10 aktif quorum ve %50 sahipsiz koltuk yakımı.'
+        : 'Economic modeling of the 35% Masternode, 40% Validator Committee, 15% Producer, 10% Quorum split and 50% unclaimed-seat burn.',
       href: `${base}/${isTr ? 'Tokenomics_Study_TR.md' : 'Tokenomics_Study.md'}`
     },
     {
@@ -358,12 +358,12 @@ const researchPapers = computed(() => {
     },
     {
       code: 'DOC-07',
-      badge: 'COIN-LOCK',
+      badge: '250 / 10 KRISTA',
       accent: 'cobalt',
       title: isTr ? 'Madenci Kaydı Rehberi' : 'Miner Registration Guide',
       desc: isTr
-        ? 'Cüzdan içi 1.000 KRISTA teminatlı (2.880 blok kilitli) Coin-Lock madenci kayıt adımları.'
-        : 'Step-by-step operator guide for 1,000 KRISTA timelocked (2,880 blocks) Coin-Lock miner registration.',
+        ? 'Cüzdan içi 250 KRISTA Coin-Lock, 10 KRISTA PoW-Lock (2.900 blok kilitli) ve Zero-Coin Açık PoW kayıt adımları.'
+        : 'Step-by-step operator guide for 250 KRISTA Coin-Lock, 10 KRISTA PoW-Lock (2,900 blocks), and Zero-Coin Open PoW registration.',
       href: `${base}/${isTr ? 'Miner_Registration_TR.md' : 'Miner_Registration.md'}`
     },
     {
@@ -475,12 +475,12 @@ const researchPapers = computed(() => {
               <span class="text-xs text-slate-500 dark:text-slate-400">{{ locale === 'tr' ? 'Ön Madencilik (Adil)' : 'Zero Premine' }}</span>
             </div>
             <div class="px-4 py-3 rounded-2xl bg-white/80 dark:bg-slate-900/75 border border-cobalt-200/60 dark:border-slate-800">
-              <span class="block text-xs font-mono font-bold text-coral-600 dark:text-coral-300">13 ALGO</span>
+              <span class="block text-xs font-mono font-bold text-coral-600 dark:text-coral-300">18 ALGO</span>
               <span class="text-xs text-slate-500 dark:text-slate-400">{{ locale === 'tr' ? 'ASIC-Dirençli VRF' : 'ASIC-Resistant VRF' }}</span>
             </div>
             <div class="px-4 py-3 rounded-2xl bg-white/80 dark:bg-slate-900/75 border border-cobalt-200/60 dark:border-slate-800">
               <span class="block text-xs font-mono font-bold text-cobalt-700 dark:text-cobalt-300">BLST QUORUM</span>
-              <span class="text-xs text-slate-500 dark:text-slate-400">secp256k1 PoBLS</span>
+              <span class="text-xs text-slate-500 dark:text-slate-400">BLS12-381 PoBLS</span>
             </div>
             <div class="px-4 py-3 rounded-2xl bg-white/80 dark:bg-slate-900/75 border border-cobalt-200/60 dark:border-slate-800">
               <span class="block text-xs font-mono font-bold text-coral-600 dark:text-coral-300">0-GAS VM</span>
@@ -521,7 +521,7 @@ const researchPapers = computed(() => {
             <div class="p-6 sm:p-7 space-y-4">
               <div class="text-xs font-mono font-bold uppercase tracking-wider text-cobalt-600 dark:text-cobalt-300 flex items-center justify-between">
                 <span>{{ locale === 'tr' ? 'Üç Katmanlı Kooperatif Mimari' : '3-Layer Cooperative Stack' }}</span>
-                <span class="text-coral-600 dark:text-coral-300">secp256k1</span>
+                <span class="text-coral-600 dark:text-coral-300">BLS12-381 + secp256k1</span>
               </div>
 
               <div class="space-y-3">
@@ -553,7 +553,7 @@ const researchPapers = computed(() => {
                     </div>
                   </div>
                   <span class="text-[11px] font-mono font-bold px-2.5 py-1 rounded-lg bg-white/80 dark:bg-slate-800 text-coral-700 dark:text-coral-300 border border-coral-200/70 dark:border-slate-700 shrink-0">
-                    Block 1,800+
+                    Block 2,000+
                   </span>
                 </div>
 
@@ -565,7 +565,7 @@ const researchPapers = computed(() => {
                     </span>
                     <div class="min-w-0">
                       <span class="text-sm font-bold text-slate-800 dark:text-white block">MESCAL Smart Contracts</span>
-                      <span class="text-xs text-slate-500 dark:text-slate-400 block truncate">Zero-Gas Sandbox • 1,000 KRISTA Coin-Lock</span>
+                      <span class="text-xs text-slate-500 dark:text-slate-400 block truncate">Zero-Gas Sandbox • 250 / 10 KRISTA Lock</span>
                     </div>
                   </div>
                   <span class="text-[11px] font-mono font-bold px-2.5 py-1 rounded-lg bg-white/80 dark:bg-slate-800 text-cobalt-700 dark:text-cobalt-300 border border-cobalt-200/70 dark:border-slate-700 shrink-0">
@@ -619,7 +619,7 @@ const researchPapers = computed(() => {
             {{ masternodesCount.toLocaleString() }}
           </div>
           <p class="text-xs text-cobalt-700 dark:text-cobalt-300 font-semibold mt-2">
-            {{ locale === 'tr' ? '4.200 KRISTA Teminat • %50 Model D Payı' : '4,200 KRISTA Collateral • 50% Model D Share' }}
+            {{ locale === 'tr' ? '4.200 KRISTA Teminat • %35 Pasif + %20 Komite + %10 Quorum' : '4,200 KRISTA Collateral • 35% Passive + 20% Committee + 10% Quorum' }}
           </p>
         </div>
 
@@ -676,10 +676,10 @@ const researchPapers = computed(() => {
             </span>
           </div>
           <div class="text-3xl font-extrabold font-mono text-slate-800 dark:text-white">
-            13 <span class="text-base font-bold text-slate-400">ALGO + BLST</span>
+            18 <span class="text-base font-bold text-slate-400">ALGO + BLST</span>
           </div>
           <p class="text-xs text-coral-600 dark:text-coral-300 font-semibold mt-2">
-            {{ locale === 'tr' ? 'X11KVS + VRF + secp256k1 Eşik İmzası' : 'X11KVS + VRF + secp256k1 Threshold Sig' }}
+            {{ locale === 'tr' ? 'X11KVS + VRF + BLS12-381 Eşik İmzası' : 'X11KVS + VRF + BLS12-381 Threshold Sig' }}
           </p>
         </div>
       </div>
@@ -730,8 +730,8 @@ const researchPapers = computed(() => {
               <span class="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-cobalt-50 dark:bg-slate-800 text-cobalt-800 dark:text-slate-300 border border-cobalt-200/60 dark:border-slate-700">Hamsi</span>
               <span class="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-cobalt-50 dark:bg-slate-800 text-cobalt-800 dark:text-slate-300 border border-cobalt-200/60 dark:border-slate-700">Fugue</span>
               <span class="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-cobalt-50 dark:bg-slate-800 text-cobalt-800 dark:text-slate-300 border border-cobalt-200/60 dark:border-slate-700">Shabal</span>
-              <span class="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-cobalt-50 dark:bg-slate-800 text-cobalt-800 dark:text-slate-300 border border-cobalt-200/60 dark:border-slate-700">Haval-256</span>
-              <span class="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-coral-400/15 text-coral-700 dark:text-coral-300 font-semibold">+8 Dynamic</span>
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-cobalt-50 dark:bg-slate-800 text-cobalt-800 dark:text-slate-300 border border-cobalt-200/60 dark:border-slate-700">Whirlpool</span>
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-coral-400/15 text-coral-700 dark:text-coral-300 font-semibold">+13 Dynamic</span>
             </div>
           </div>
 
@@ -800,7 +800,7 @@ const researchPapers = computed(() => {
             </p>
             <div class="flex flex-wrap gap-1.5 pt-1">
               <span class="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-cobalt-50 dark:bg-slate-800 text-cobalt-800 dark:text-slate-300 border border-cobalt-200/60 dark:border-slate-700">supranational/blst</span>
-              <span class="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-cobalt-50 dark:bg-slate-800 text-cobalt-800 dark:text-slate-300 border border-cobalt-200/60 dark:border-slate-700">secp256k1</span>
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-cobalt-50 dark:bg-slate-800 text-cobalt-800 dark:text-slate-300 border border-cobalt-200/60 dark:border-slate-700">BLS12-381 + secp256k1</span>
               <span class="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-coral-400/15 text-coral-700 dark:text-coral-300 font-semibold">LLMQ Quorum</span>
             </div>
           </div>
@@ -860,9 +860,9 @@ const researchPapers = computed(() => {
               {{ t('mescalDesc') }}
             </p>
             <div class="flex flex-wrap gap-1.5 pt-1">
-              <span class="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-coral-400/15 text-coral-700 dark:text-coral-300 font-semibold">1,000 KRISTA Coin-Lock</span>
-              <span class="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-cobalt-50 dark:bg-slate-800 text-cobalt-800 dark:text-slate-300 border border-cobalt-200/60 dark:border-slate-700">2,880 Blocks</span>
-              <span class="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-cobalt-50 dark:bg-slate-800 text-cobalt-800 dark:text-slate-300 border border-cobalt-200/60 dark:border-slate-700">Escrow &amp; Vesting</span>
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-coral-400/15 text-coral-700 dark:text-coral-300 font-semibold">250 KRISTA Coin-Lock</span>
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-cobalt-50 dark:bg-slate-800 text-cobalt-800 dark:text-slate-300 border border-cobalt-200/60 dark:border-slate-700">10 KRISTA PoW-Lock</span>
+              <span class="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-cobalt-50 dark:bg-slate-800 text-cobalt-800 dark:text-slate-300 border border-cobalt-200/60 dark:border-slate-700">2,900 Blocks</span>
             </div>
           </div>
 
@@ -878,7 +878,7 @@ const researchPapers = computed(() => {
                   v-model="mescalTemplate"
                   class="bg-white dark:bg-slate-900 border border-cobalt-200/80 dark:border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-700 dark:text-slate-200 font-mono"
                 >
-                  <option value="escrow">Coin-Lock (1,000 KRISTA)</option>
+                  <option value="escrow">Coin-Lock (250 KRISTA)</option>
                   <option value="vesting">Linear Vesting</option>
                   <option value="token">Asset Minting</option>
                 </select>
@@ -1011,33 +1011,33 @@ const researchPapers = computed(() => {
               </div>
               <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300">
                 {{ locale === 'tr'
-                  ? 'Ağ yönetişimi, LLMQ quorum imzaları ve hızlı doğrulama hizmetlerini yürütür. Model D kapsamında kalan ödül havuzunun %50 pasif + %10 aktif quorum payını alır.'
-                  : 'Provides LLMQ quorum verification and network stability. Receives 50% Passive Payee share plus 10% Active LLMQ Quorum share under Model D.' }}
+                  ? 'Ağ yönetişimi, LLMQ quorum imzaları ve doğrulayıcı komite hizmetlerini yürütür. Model D kapsamında %35 pasif + %20 MN doğrulayıcı komitesi (5x%4) + %10 aktif LLMQ quorum payını alır.'
+                  : 'Provides LLMQ quorum verification and committee validation. Receives 35% Passive Payee share + 20% MN Validator Committee share (5x4%) + 10% Active LLMQ Quorum share under Model D.' }}
               </p>
             </div>
 
-            <!-- Tier 2: Coin-Lock Registered Miner -->
+            <!-- Tier 2: Coin-Lock & Open PoW Miners -->
             <div class="tonal-panel p-5 rounded-2xl border-l-4 border-l-[#F5897C] space-y-2">
               <div class="flex flex-wrap items-center justify-between gap-2">
                 <span class="font-extrabold text-base text-slate-800 dark:text-white">
-                  {{ locale === 'tr' ? '2. Kayıtlı Madenci (Coin-Lock)' : '2. Registered Miner (Coin-Lock)' }}
+                  {{ locale === 'tr' ? '2. Coin-Lock ve Açık PoW Madencileri' : '2. Coin-Lock & Open PoW Miners' }}
                 </span>
                 <span class="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-white/85 dark:bg-slate-900 text-coral-600 dark:text-coral-300 border border-coral-200/70 dark:border-slate-700">
-                  1,000 KRISTA • 2,880 {{ locale === 'tr' ? 'Blok' : 'Blocks' }}
+                  250 / 10 KRISTA • 2,900 {{ locale === 'tr' ? 'Blok' : 'Blocks' }}
                 </span>
               </div>
               <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300">
                 {{ locale === 'tr'
-                  ? 'MESCAL cüzdan sözleşmesiyle 1.000 KRISTA teminatını 2.880 blok (~1 gün) kilitleyerek ADAM komite seçimlerine ve %25 Aday Doğrulayıcı + %15 Blok Üreticisi havuzuna katılır.'
-                  : 'Locks 1,000 KRISTA for 2,880 blocks (~1 day) via native MESCAL Coin-Lock contract to qualify for ADAM rounds, earning from the 25% Validator Set and 15% Block Producer splits.' }}
+                  ? '250 KRISTA Coin-Lock (%8 özel koltuk) veya 10 KRISTA PoW-Lock / Zero-Coin Açık PoW (%12 açık koltuk, 3x%4) ile ADAM turlarına ve dahili 1-Click CPU/GPU madenciliğine katılır.'
+                  : 'Participates via 250 KRISTA Coin-Lock (8% dedicated seat) or 10 KRISTA PoW-Lock / Zero-Coin Open PoW (12% open seats, 3x4%) in ADAM rounds with built-in 1-Click GUI & external CPU/GPU mining.' }}
               </p>
             </div>
 
-            <!-- Tier 3: PoS Staker & Validator -->
+            <!-- Tier 3: PoS Staker & Active PoB -->
             <div class="tonal-panel p-5 rounded-2xl border-l-4 border-l-cobalt-600 space-y-2">
               <div class="flex flex-wrap items-center justify-between gap-2">
                 <span class="font-extrabold text-base text-slate-800 dark:text-white">
-                  {{ locale === 'tr' ? '3. PoS Staker ve Doğrulayıcı' : '3. PoS Staker & Validator' }}
+                  {{ locale === 'tr' ? '3. PoS Staker ve Aktif PoB' : '3. PoS Staker & Active PoB' }}
                 </span>
                 <span class="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-white/85 dark:bg-slate-900 text-cobalt-700 dark:text-cobalt-300 border border-cobalt-200/70 dark:border-slate-700">
                   {{ locale === 'tr' ? 'Blok 200+ Aktif' : 'Active Block 200+' }}
@@ -1045,8 +1045,8 @@ const researchPapers = computed(() => {
               </div>
               <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300">
                 {{ locale === 'tr'
-                  ? '200. bloktan itibaren enerji verimli Hisse Kanıtı (PoS) ve PoBLS eşik çekilişleriyle blok üretimine ve zincir güvenliğine doğrudan katkıda bulunur.'
-                  : 'Participates in energy-efficient Proof of Stake (PoS) block production and PoBLS committee verification starting at Block 200.' }}
+                  ? '200. bloktan itibaren enerji verimli Hisse Kanıtı (PoS), PoBLS çekilişleri ve 3.0x\'e kadar Aktif Yakım Kanıtı (PoB) staking çarpanıyla %15 Blok Üreticisi ödül havuzuna katılır.'
+                  : 'Participates in energy-efficient Proof of Stake (PoS), PoBLS lottery, and up to 3.0x Active Proof-of-Burn (PoB) staking multiplier for the 15% Block Producer pool starting at Block 200.' }}
               </p>
             </div>
           </div>
@@ -1096,7 +1096,7 @@ const researchPapers = computed(() => {
             </div>
             <div class="flex items-center justify-between">
               <dt class="text-slate-500 dark:text-slate-400">{{ locale === 'tr' ? 'Başlangıç Ödülü (Blok 2–9.999):' : 'Bootstrap Subsidy (Blocks 2–9,999):' }}</dt>
-              <dd class="font-mono font-bold text-slate-800 dark:text-white">100.0 KRISTA</dd>
+              <dd class="font-mono font-bold text-slate-800 dark:text-white">40 → 30 → 20 KRISTA</dd>
             </div>
             <div class="flex items-center justify-between">
               <dt class="text-slate-500 dark:text-slate-400">{{ locale === 'tr' ? 'Standart Ödül (Blok 10.000+):' : 'Standard Subsidy (Block 10,000+):' }}</dt>
@@ -1117,8 +1117,8 @@ const researchPapers = computed(() => {
             </div>
             <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
               {{ locale === 'tr'
-                ? 'Geliştirici Hazine Fonu (%7.0) ve Başlangıç Musluğu (50.000. bloğa kadar %0.7) ayrıldıktan sonra kalan %92.3 (veya %93) ödül havuzu Model D oranlarıyla (%50 / %25 / %15 / %10) dağıtılır.'
-                : 'After the mandatory Developer Fund (7.0%) and Bootstrap Faucet (0.7% until block 50,000), the remaining 92.3% (or 93.0%) pool is split 50% / 25% / 15% / 10% via Model D.' }}
+                ? 'Geliştirici Hazine Fonu (%7.0) ve Başlangıç Musluğu (50.000. bloğa kadar %0.7) ayrıldıktan sonra kalan %92.3 (veya %93) ödül havuzu Model D oranlarıyla (%35 / %40 / %15 / %10) dağıtılır; sahipsiz komite koltuklarının %50\'si otomatik yakılır.'
+                : 'After the mandatory Developer Fund (7.0%) and Bootstrap Faucet (0.7% until block 50,000), the remaining 92.3% (or 93.0%) pool is split 35% / 40% / 15% / 10% via Model D, with 50% of unclaimed committee seats permanently burned.' }}
             </p>
           </div>
         </div>
@@ -1335,20 +1335,20 @@ const researchPapers = computed(() => {
         <!-- Phase 3 -->
         <div
           class="protocol-card rounded-3xl p-6 flex flex-col justify-between border-t-4"
-          :class="currentBlock >= 1800 ? 'border-t-[#7695CD]' : 'border-t-[#F5897C]'"
+          :class="currentBlock >= 2000 ? 'border-t-[#7695CD]' : 'border-t-[#F5897C]'"
         >
           <div class="space-y-4">
             <div class="flex items-center justify-between gap-2">
               <span class="font-mono text-xs font-extrabold px-2.5 py-1 rounded-lg bg-coral-400/15 text-coral-700 dark:text-coral-300">
-                BLOCK 1,800
+                BLOCK 2,000
               </span>
               <span
                 class="text-xs font-bold px-2.5 py-0.5 rounded-full border"
-                :class="currentBlock >= 1800
+                :class="currentBlock >= 2000
                   ? 'bg-cobalt-400/15 text-cobalt-700 dark:text-cobalt-300 border-cobalt-400/30'
                   : 'bg-coral-400/15 text-coral-700 dark:text-coral-300 border-coral-400/30'"
               >
-                {{ currentBlock >= 1800 ? (locale === 'tr' ? 'Aktif' : 'Active') : (locale === 'tr' ? 'Sıradaki' : 'Next Phase') }}
+                {{ currentBlock >= 2000 ? (locale === 'tr' ? 'Aktif' : 'Active') : (locale === 'tr' ? 'Sıradaki' : 'Next Phase') }}
               </span>
             </div>
             <h3 class="text-lg font-extrabold text-slate-800 dark:text-white">
@@ -1359,9 +1359,9 @@ const researchPapers = computed(() => {
             </p>
           </div>
           <div class="pt-4 mt-6 border-t border-cobalt-200/50 dark:border-slate-800 flex items-center justify-between text-xs font-mono text-slate-500">
-            <span>BLST secp256k1</span>
+            <span>BLST BLS12-381</span>
             <span class="text-coral-600 dark:text-coral-400 font-bold">
-              {{ currentBlock >= 1800 ? '100%' : `${Math.min(99, Math.floor((currentBlock / 1800) * 100))}%` }}
+              {{ currentBlock >= 2000 ? '100%' : `${Math.min(99, Math.floor((currentBlock / 2000) * 100))}%` }}
             </span>
           </div>
         </div>
@@ -1393,7 +1393,7 @@ const researchPapers = computed(() => {
             </p>
           </div>
           <div class="pt-4 mt-6 border-t border-cobalt-200/50 dark:border-slate-800 flex items-center justify-between text-xs font-mono text-slate-500">
-            <span>50 / 25 / 15 / 10</span>
+            <span>35 / 40 / 15 / 10</span>
             <span class="text-cobalt-600 dark:text-cobalt-400 font-bold">
               {{ currentBlock >= 2200 ? '100%' : `${Math.min(99, Math.floor((currentBlock / 2200) * 100))}%` }}
             </span>

@@ -92,8 +92,8 @@ const documentsList = computed(() => {
     },
     {
       id: 'miner',
-      title: isTr ? 'Madenci Kaydı (Coin-Lock)' : 'Miner Registration (Coin-Lock)',
-      badge: '1,000 KRISTA',
+      title: isTr ? 'Madenci Kaydı (Coin-Lock & PoW-Lock)' : 'Miner Registration (Coin-Lock & PoW-Lock)',
+      badge: '250 / 10 KRISTA',
       href: `${base}/${isTr ? 'Miner_Registration_TR.md' : 'Miner_Registration.md'}`
     },
     {
