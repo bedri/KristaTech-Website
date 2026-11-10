@@ -702,16 +702,16 @@ const researchPapers = computed(() => {
       <!-- Subgrid 3-Column Feature Cards (with harmonious tonal sub-panels) -->
       <div class="feature-cards-grid">
         <!-- Pillar 1: ADAM Consensus -->
-        <article class="feature-subgrid-card protocol-card rounded-3xl p-7 sm:p-8 relative overflow-hidden">
+        <article class="feature-subgrid-card protocol-card rounded-3xl p-7 sm:p-8 relative overflow-clip">
           <!-- Row 1: Header -->
-          <div class="space-y-3">
-            <div class="flex items-center justify-between gap-2">
-              <div class="w-12 h-12 rounded-2xl bg-[#7695CD]/15 border border-[#7695CD]/35 flex items-center justify-center text-cobalt-600 dark:text-cobalt-300">
+          <div class="space-y-3 min-w-0">
+            <div class="flex items-center justify-between gap-2 min-w-0">
+              <div class="w-12 h-12 shrink-0 rounded-2xl bg-[#7695CD]/15 border border-[#7695CD]/35 flex items-center justify-center text-cobalt-600 dark:text-cobalt-300">
                 <svg aria-hidden="true" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
                 </svg>
               </div>
-              <span class="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-cobalt-400/15 text-cobalt-700 dark:text-cobalt-300 border border-cobalt-400/30">
+              <span class="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-cobalt-400/15 text-cobalt-700 dark:text-cobalt-300 border border-cobalt-400/30 min-w-0 break-words text-right">
                 {{ t('adamBadge') }}
               </span>
             </div>
@@ -775,16 +775,16 @@ const researchPapers = computed(() => {
         </article>
 
         <!-- Pillar 2: Proof of BLS (PoBLS) -->
-        <article class="feature-subgrid-card protocol-card rounded-3xl p-7 sm:p-8 relative overflow-hidden">
+        <article class="feature-subgrid-card protocol-card rounded-3xl p-7 sm:p-8 relative overflow-clip">
           <!-- Row 1: Header -->
-          <div class="space-y-3">
-            <div class="flex items-center justify-between gap-2">
-              <div class="w-12 h-12 rounded-2xl bg-[#F5897C]/15 border border-[#F5897C]/35 flex items-center justify-center text-coral-600 dark:text-coral-300">
+          <div class="space-y-3 min-w-0">
+            <div class="flex items-center justify-between gap-2 min-w-0">
+              <div class="w-12 h-12 shrink-0 rounded-2xl bg-[#F5897C]/15 border border-[#F5897C]/35 flex items-center justify-center text-coral-600 dark:text-coral-300">
                 <svg aria-hidden="true" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
               </div>
-              <span class="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-coral-400/15 text-coral-700 dark:text-coral-300 border border-coral-400/30">
+              <span class="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-coral-400/15 text-coral-700 dark:text-coral-300 border border-coral-400/30 min-w-0 break-words text-right">
                 {{ t('poblsBadge') }}
               </span>
             </div>
@@ -836,16 +836,16 @@ const researchPapers = computed(() => {
         </article>
 
         <!-- Pillar 3: MESCAL Smart Contracts -->
-        <article class="feature-subgrid-card protocol-card rounded-3xl p-7 sm:p-8 relative overflow-hidden">
+        <article class="feature-subgrid-card protocol-card rounded-3xl p-7 sm:p-8 relative overflow-clip">
           <!-- Row 1: Header -->
-          <div class="space-y-3">
-            <div class="flex items-center justify-between gap-2">
-              <div class="w-12 h-12 rounded-2xl bg-[#7695CD]/15 border border-[#7695CD]/35 flex items-center justify-center text-cobalt-600 dark:text-cobalt-300">
+          <div class="space-y-3 min-w-0">
+            <div class="flex items-center justify-between gap-2 min-w-0">
+              <div class="w-12 h-12 shrink-0 rounded-2xl bg-[#7695CD]/15 border border-[#7695CD]/35 flex items-center justify-center text-cobalt-600 dark:text-cobalt-300">
                 <svg aria-hidden="true" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
                 </svg>
               </div>
-              <span class="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-cobalt-400/15 text-cobalt-700 dark:text-cobalt-300 border border-cobalt-400/30">
+              <span class="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-cobalt-400/15 text-cobalt-700 dark:text-cobalt-300 border border-cobalt-400/30 min-w-0 break-words text-right">
                 {{ t('mescalBadge') }}
               </span>
             </div>
@@ -855,7 +855,7 @@ const researchPapers = computed(() => {
           </div>
 
           <!-- Row 2: Description & Tags -->
-          <div class="space-y-4 my-5">
+          <div class="space-y-4 my-5 min-w-0">
             <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
               {{ t('mescalDesc') }}
             </p>
@@ -867,16 +867,16 @@ const researchPapers = computed(() => {
           </div>
 
           <!-- Row 3: Harmonious Interactive MESCAL Studio -->
-          <div class="tonal-panel rounded-2xl p-4 flex flex-col justify-between gap-2.5">
-            <div class="flex items-center justify-between gap-2">
-              <label for="mescal-template-select" class="text-xs font-mono font-bold text-cobalt-700 dark:text-cobalt-300 uppercase">
+          <div class="tonal-panel rounded-2xl p-4 flex flex-col justify-between gap-2.5 min-w-0">
+            <div class="flex flex-wrap items-center justify-between gap-2 min-w-0">
+              <label for="mescal-template-select" class="text-xs font-mono font-bold text-cobalt-700 dark:text-cobalt-300 uppercase shrink-0">
                 MESCAL VM
               </label>
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-1.5 min-w-0 max-w-full">
                 <select
                   id="mescal-template-select"
                   v-model="mescalTemplate"
-                  class="bg-white dark:bg-slate-900 border border-cobalt-200/80 dark:border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-700 dark:text-slate-200 font-mono"
+                  class="min-w-0 max-w-full truncate bg-white dark:bg-slate-900 border border-cobalt-200/80 dark:border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-700 dark:text-slate-200 font-mono"
                 >
                   <option value="escrow">Coin-Lock (250 KRISTA)</option>
                   <option value="vesting">Linear Vesting</option>
@@ -885,41 +885,41 @@ const researchPapers = computed(() => {
                 <button
                   type="button"
                   @click="copyMescalBytecode"
-                  class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-cobalt-200/80 dark:border-slate-700 hover:border-coral-400 text-[11px] font-mono font-semibold text-coral-600 dark:text-coral-300 cursor-pointer"
+                  class="shrink-0 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-cobalt-200/80 dark:border-slate-700 hover:border-coral-400 text-[11px] font-mono font-semibold text-coral-600 dark:text-coral-300 cursor-pointer"
                 >
                   {{ copiedBytecode ? (locale === 'tr' ? 'Kopyalandı' : 'Copied') : (locale === 'tr' ? 'Kopyala' : 'Copy') }}
                 </button>
               </div>
             </div>
 
-            <div v-if="mescalTemplate === 'escrow'" class="grid grid-cols-2 gap-2 text-xs">
-              <label for="mescal-collateral-input" class="flex flex-col text-slate-500 dark:text-slate-400 font-mono">
-                <span>Collateral (KRISTA)</span>
+            <div v-if="mescalTemplate === 'escrow'" class="grid grid-cols-2 gap-2 text-xs min-w-0">
+              <label for="mescal-collateral-input" class="flex flex-col min-w-0 text-slate-500 dark:text-slate-400 font-mono">
+                <span class="truncate">Collateral (KRISTA)</span>
                 <input
                   id="mescal-collateral-input"
                   type="number"
                   min="1"
                   max="210000000"
                   v-model="mescalParams.amount"
-                  class="bg-white dark:bg-slate-900 border border-cobalt-200/80 dark:border-slate-700 rounded-lg px-2.5 py-1 mt-1 text-slate-800 dark:text-white font-mono text-xs font-semibold"
+                  class="w-full min-w-0 bg-white dark:bg-slate-900 border border-cobalt-200/80 dark:border-slate-700 rounded-lg px-2.5 py-1 mt-1 text-slate-800 dark:text-white font-mono text-xs font-semibold"
                 />
               </label>
-              <label for="mescal-locktime-input" class="flex flex-col text-slate-500 dark:text-slate-400 font-mono">
-                <span>Locktime (Blocks)</span>
+              <label for="mescal-locktime-input" class="flex flex-col min-w-0 text-slate-500 dark:text-slate-400 font-mono">
+                <span class="truncate">Locktime (Blocks)</span>
                 <input
                   id="mescal-locktime-input"
                   type="number"
                   min="1"
                   max="5256000"
                   v-model="mescalParams.locktime"
-                  class="bg-white dark:bg-slate-900 border border-cobalt-200/80 dark:border-slate-700 rounded-lg px-2.5 py-1 mt-1 text-slate-800 dark:text-white font-mono text-xs font-semibold"
+                  class="w-full min-w-0 bg-white dark:bg-slate-900 border border-cobalt-200/80 dark:border-slate-700 rounded-lg px-2.5 py-1 mt-1 text-slate-800 dark:text-white font-mono text-xs font-semibold"
                 />
               </label>
             </div>
 
             <pre
               tabindex="0"
-              class="bg-white/90 dark:bg-slate-900/90 rounded-xl p-2.5 text-xs font-mono border border-cobalt-200/70 dark:border-slate-800 overflow-x-auto text-cobalt-800 dark:text-cobalt-200 max-h-[88px] leading-relaxed"
+              class="w-full max-w-full min-w-0 bg-white/90 dark:bg-slate-900/90 rounded-xl p-2.5 text-xs font-mono border border-cobalt-200/70 dark:border-slate-800 overflow-y-auto whitespace-pre-wrap break-words overscroll-contain text-cobalt-800 dark:text-cobalt-200 max-h-[96px] leading-relaxed"
             ><code>{{ mescalBytecode }}</code></pre>
           </div>
         </article>

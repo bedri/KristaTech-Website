@@ -246,6 +246,11 @@ html.dark .tonal-panel {
   gap: 1.75rem;
 }
 
+.feature-subgrid-card,
+.feature-subgrid-card > * {
+  min-inline-size: 0;
+}
+
 @media (min-width: 1024px) {
   .feature-cards-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -255,6 +260,7 @@ html.dark .tonal-panel {
   .feature-subgrid-card {
     grid-row: span 3;
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto 1fr auto;
     grid-template-rows: subgrid;
   }
