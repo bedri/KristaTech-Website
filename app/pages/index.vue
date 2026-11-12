@@ -193,7 +193,6 @@ const splitPercentages = computed(() => calculateModelDSplits(calcHeight.value))
 const rewardAmounts = computed(() => calculateRewardAmounts(calcHeight.value))
 
 const devRewardAmount = computed(() => rewardAmounts.value.dev)
-const faucetRewardAmount = computed(() => rewardAmounts.value.faucet)
 const mnRewardAmount = computed(() => rewardAmounts.value.mn)
 const quorumRewardAmount = computed(() => rewardAmounts.value.quorum)
 const participantsRewardAmount = computed(() => rewardAmounts.value.participants)
@@ -201,7 +200,7 @@ const producerRewardAmount = computed(() => rewardAmounts.value.producer)
 
 const requiredCollateral = computed(() => MASTERNODE_COLLATERAL)
 
-// Strictly harmonious logo-derived palette for all 6 reward segments
+// Strictly harmonious logo-derived palette for all 5 reward segments
 const allocationRows = computed(() => [
   {
     key: 'mn',
@@ -242,14 +241,6 @@ const allocationRows = computed(() => [
     amount: devRewardAmount.value,
     dotClass: 'bg-[#d45849]',
     barClass: 'bg-[#d45849]'
-  },
-  {
-    key: 'faucet',
-    label: t('faucetReward'),
-    percent: splitPercentages.value.faucet,
-    amount: faucetRewardAmount.value,
-    dotClass: 'bg-[#f8b8af]',
-    barClass: 'bg-[#f8b8af]'
   }
 ])
 
@@ -406,7 +397,7 @@ const researchPapers = computed(() => {
             </span>
             <span class="hidden sm:inline text-cobalt-200 dark:text-slate-700">•</span>
             <span class="hidden sm:inline text-xs font-mono text-slate-500 dark:text-slate-400">
-              Core v1.4.5.9
+              Core v1.5.5.0
             </span>
           </div>
 
@@ -1011,8 +1002,8 @@ const researchPapers = computed(() => {
               </div>
               <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300">
                 {{ locale === 'tr'
-                  ? 'Ağ yönetişimi, LLMQ quorum imzaları ve doğrulayıcı komite hizmetlerini yürütür. Model D kapsamında %35 pasif + %20 MN doğrulayıcı komitesi (5x%4) + %10 aktif LLMQ quorum payını alır.'
-                  : 'Provides LLMQ quorum verification and committee validation. Receives 35% Passive Payee share + 20% MN Validator Committee share (5x4%) + 10% Active LLMQ Quorum share under Model D.' }}
+                  ? 'Ağ yönetişimi, LLMQ quorum imzaları ve doğrulayıcı komite hizmetlerini yürütür. Model D kapsamında %35 pasif + %20 MN doğrulayıcı komitesi (7 koltuk ~%2.86) + %10 aktif LLMQ quorum payını alır.'
+                  : 'Provides LLMQ quorum verification and committee validation. Receives 35% Passive Payee share + 20% MN Validator Committee share (7 seats ~2.86%) + 10% Active LLMQ Quorum share under Model D.' }}
               </p>
             </div>
 
@@ -1028,8 +1019,8 @@ const researchPapers = computed(() => {
               </div>
               <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300">
                 {{ locale === 'tr'
-                  ? '250 KRISTA Coin-Lock (%8 özel koltuk) veya 10 KRISTA PoW-Lock / Zero-Coin Açık PoW (%12 açık koltuk, 3x%4) ile ADAM turlarına ve dahili 1-Click CPU/GPU madenciliğine katılır.'
-                  : 'Participates via 250 KRISTA Coin-Lock (8% dedicated seat) or 10 KRISTA PoW-Lock / Zero-Coin Open PoW (12% open seats, 3x4%) in ADAM rounds with built-in 1-Click GUI & external CPU/GPU mining.' }}
+                  ? '250 KRISTA Coin-Lock (%8 özel koltuk + Tier 2A taşma) veya 10 KRISTA PoW-Lock / Zero-Coin Açık PoW (240 blok kira, %12 açık koltuk, 3x%4) ile ADAM turlarına ve dahili 1-Click CPU/GPU madenciliğine katılır.'
+                  : 'Participates via 250 KRISTA Coin-Lock (8% dedicated seat + Tier 2A overflow) or 10 KRISTA PoW-Lock / Zero-Coin Open PoW (240-block lease, 12% open seats, 3x4%) in ADAM rounds with built-in 1-Click GUI & external CPU/GPU mining.' }}
               </p>
             </div>
 
@@ -1117,8 +1108,8 @@ const researchPapers = computed(() => {
             </div>
             <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
               {{ locale === 'tr'
-                ? 'Geliştirici Hazine Fonu (%7.0) ve Başlangıç Musluğu (50.000. bloğa kadar %0.7) ayrıldıktan sonra kalan %92.3 (veya %93) ödül havuzu Model D oranlarıyla (%35 / %40 / %15 / %10) dağıtılır; sahipsiz komite koltuklarının %50\'si otomatik yakılır.'
-                : 'After the mandatory Developer Fund (7.0%) and Bootstrap Faucet (0.7% until block 50,000), the remaining 92.3% (or 93.0%) pool is split 35% / 40% / 15% / 10% via Model D, with 50% of unclaimed committee seats permanently burned.' }}
+                ? 'Geliştirici Hazine Fonu (%7.0) ayrıldıktan sonra kalan %93.0 net ödül havuzu Blok 200–2.199 arasında %60 Üretici / %40 Aktif Komite, Blok 2.200+ Model D kapsamında ise %35 / %40 / %15 / %10 oranlarıyla dağıtılır; sahipsiz komite koltuklarının %50\'si otomatik yakılır.'
+                : 'After the mandatory Developer Fund (7.0%), the uniform 93.0% net pool is split 60% Producer / 40% Active Committee in Blocks 200–2,199 and 35% / 40% / 15% / 10% via Model D from Block 2,200+, with 50% of unclaimed committee seats permanently burned.' }}
             </p>
           </div>
         </div>

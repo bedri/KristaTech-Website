@@ -169,7 +169,6 @@ export function calculateEmissionEpochLabel(heightInput: unknown, localeInput: u
 
 export interface ModelDSplitPercentages {
   dev: number
-  faucet: number
   mn: number
   quorum: number
   participants: number
@@ -181,7 +180,6 @@ export function calculateModelDSplits(heightInput: unknown): ModelDSplitPercenta
   if (!Number.isFinite(raw) || raw <= 1) {
     return {
       dev: 0.0,
-      faucet: 0.0,
       mn: 0.0,
       quorum: 0.0,
       participants: 0.0,
@@ -191,13 +189,11 @@ export function calculateModelDSplits(heightInput: unknown): ModelDSplitPercenta
 
   const h = sanitizeBlockHeight(raw, 1)
   const devPercent = 7.0
-  const faucetPercent = h <= 50000 ? 0.7 : 0.0
-  const remaining = parseFloat((100.0 - devPercent - faucetPercent).toFixed(4))
+  const remaining = parseFloat((100.0 - devPercent).toFixed(4))
 
   if (h >= 2200) {
     return {
       dev: devPercent,
-      faucet: faucetPercent,
       mn: parseFloat((remaining * 0.35).toFixed(4)),
       quorum: parseFloat((remaining * 0.10).toFixed(4)),
       participants: parseFloat((remaining * 0.40).toFixed(4)),
@@ -205,9 +201,18 @@ export function calculateModelDSplits(heightInput: unknown): ModelDSplitPercenta
     }
   }
 
+  if (h >= 200) {
+    return {
+      dev: devPercent,
+      mn: 0.0,
+      quorum: 0.0,
+      participants: parseFloat((remaining * 0.40).toFixed(4)),
+      producer: parseFloat((remaining * 0.60).toFixed(4))
+    }
+  }
+
   return {
     dev: devPercent,
-    faucet: faucetPercent,
     mn: 0.0,
     quorum: 0.0,
     participants: 0.0,
@@ -218,7 +223,6 @@ export function calculateModelDSplits(heightInput: unknown): ModelDSplitPercenta
 export interface ModelDRewardAmounts {
   total: number
   dev: number
-  faucet: number
   mn: number
   quorum: number
   participants: number
@@ -232,7 +236,6 @@ export function calculateRewardAmounts(heightInput: unknown): ModelDRewardAmount
   return {
     total,
     dev: parseFloat((total * (splits.dev / 100)).toFixed(4)),
-    faucet: parseFloat((total * (splits.faucet / 100)).toFixed(4)),
     mn: parseFloat((total * (splits.mn / 100)).toFixed(4)),
     quorum: parseFloat((total * (splits.quorum / 100)).toFixed(4)),
     participants: parseFloat((total * (splits.participants / 100)).toFixed(4)),

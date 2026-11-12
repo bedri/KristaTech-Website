@@ -135,7 +135,6 @@ describe('Protocol & Cryptoeconomic Utilities (app/utils/protocol.ts)', () => {
       const splits = calculateModelDSplits(1)
       assert.deepEqual(splits, {
         dev: 0,
-        faucet: 0,
         mn: 0,
         quorum: 0,
         participants: 0,
@@ -143,54 +142,63 @@ describe('Protocol & Cryptoeconomic Utilities (app/utils/protocol.ts)', () => {
       })
     })
 
-    it('allocates 7% dev, 0.7% faucet, and 92.3% producer before Model D activation (blocks 2..2199)', () => {
-      const splits = calculateModelDSplits(500)
+    it('allocates 7% dev and 93% producer during Classic PoW Bootstrap (blocks 2..199)', () => {
+      const splits = calculateModelDSplits(100)
       assert.equal(splits.dev, 7.0)
-      assert.equal(splits.faucet, 0.7)
-      assert.equal(splits.producer, 92.3)
+      assert.equal(splits.producer, 93.0)
+      assert.equal(splits.participants, 0)
       assert.equal(splits.mn, 0)
-      const sum = splits.dev + splits.faucet + splits.mn + splits.quorum + splits.participants + splits.producer
+      const sum = splits.dev + splits.mn + splits.quorum + splits.participants + splits.producer
       assert.equal(parseFloat(sum.toFixed(4)), 100)
+
+      const amounts = calculateRewardAmounts(100)
+      assert.equal(amounts.total, 40)
+      assert.equal(amounts.dev, 2.8)
+      assert.equal(amounts.producer, 37.2)
     })
 
-    it('activates Model D 35/40/15/10 pool splits at block 2200 with faucet active', () => {
+    it('allocates 7% dev, 55.8% producer (60% pool), and 37.2% validators (40% pool) in Pre-Model D ADAM (blocks 200..2199)', () => {
+      const splits = calculateModelDSplits(500)
+      assert.equal(splits.dev, 7.0)
+      assert.equal(splits.producer, 55.8)
+      assert.equal(splits.participants, 37.2)
+      assert.equal(splits.mn, 0)
+      const sum = splits.dev + splits.mn + splits.quorum + splits.participants + splits.producer
+      assert.equal(parseFloat(sum.toFixed(4)), 100)
+
+      const amounts = calculateRewardAmounts(500)
+      assert.equal(amounts.total, 40)
+      assert.equal(amounts.dev, 2.8)
+      assert.equal(amounts.producer, 22.32)
+      assert.equal(amounts.participants, 14.88)
+    })
+
+    it('activates uniform 93% Model D 35/40/15/10 pool splits from block 2200 onward', () => {
       const splits = calculateModelDSplits(2200)
       assert.equal(splits.dev, 7.0)
-      assert.equal(splits.faucet, 0.7)
-      // Remaining = 92.3%
-      assert.equal(splits.mn, 32.305)
-      assert.equal(splits.participants, 36.92)
-      assert.equal(splits.producer, 13.845)
-      assert.equal(splits.quorum, 9.23)
-      const sum = splits.dev + splits.faucet + splits.mn + splits.quorum + splits.participants + splits.producer
+      // Remaining = 93.0%
+      assert.equal(splits.mn, 32.55)
+      assert.equal(splits.participants, 37.2)
+      assert.equal(splits.producer, 13.95)
+      assert.equal(splits.quorum, 9.3)
+      const sum = splits.dev + splits.mn + splits.quorum + splits.participants + splits.producer
       assert.equal(parseFloat(sum.toFixed(4)), 100)
 
       const amounts = calculateRewardAmounts(2200)
       assert.equal(amounts.total, 40)
-      assert.equal(amounts.mn, 12.922)
+      assert.equal(amounts.mn, 13.02)
+      assert.equal(amounts.participants, 14.88)
+      assert.equal(amounts.producer, 5.58)
+      assert.equal(amounts.quorum, 3.72)
       assert.equal(amounts.dev, 2.8)
-    })
 
-    it('terminates the 0.7% bootstrap faucet after block 50,000', () => {
-      const at50k = calculateModelDSplits(50000)
-      assert.equal(at50k.faucet, 0.7)
-
-      const after50k = calculateModelDSplits(50001)
-      assert.equal(after50k.faucet, 0.0)
-      assert.equal(after50k.dev, 7.0)
-      // Remaining = 93.0%
-      assert.equal(after50k.mn, 32.55)
-      assert.equal(after50k.participants, 37.2)
-      assert.equal(after50k.producer, 13.95)
-      assert.equal(after50k.quorum, 9.3)
-      const sum =
-        after50k.dev +
-        after50k.faucet +
-        after50k.mn +
-        after50k.quorum +
-        after50k.participants +
-        after50k.producer
-      assert.equal(parseFloat(sum.toFixed(4)), 100)
+      const standardAmounts = calculateRewardAmounts(50001)
+      assert.equal(standardAmounts.total, 15)
+      assert.equal(standardAmounts.mn, 4.8825)
+      assert.equal(standardAmounts.participants, 5.58)
+      assert.equal(standardAmounts.producer, 2.0925)
+      assert.equal(standardAmounts.quorum, 1.395)
+      assert.equal(standardAmounts.dev, 1.05)
     })
   })
 
