@@ -397,7 +397,7 @@ const researchPapers = computed(() => {
             </span>
             <span class="hidden sm:inline text-cobalt-200 dark:text-slate-700">•</span>
             <span class="hidden sm:inline text-xs font-mono text-slate-500 dark:text-slate-400">
-              Core v1.5.5.0
+              Core v1.5.6.0
             </span>
           </div>
 

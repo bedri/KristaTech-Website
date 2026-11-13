@@ -105,7 +105,7 @@ const documentsList = computed(() => {
     {
       id: 'releases',
       title: isTr ? 'Sürüm Notları' : 'Release Notes',
-      badge: 'v1.5.5.0',
+      badge: 'v1.5.6.0',
       href: `${base}/release-notes.md`
     }
   ]
@@ -578,7 +578,7 @@ onUnmounted(() => {
             </p>
             <div class="flex flex-wrap items-center gap-2 pt-1">
               <span class="text-xs font-mono font-semibold px-2.5 py-1 rounded-lg bg-cobalt-400/15 text-cobalt-700 dark:text-cobalt-300 border border-cobalt-400/30">
-                Core v1.5.5.0
+                Core v1.5.6.0
               </span>
               <span class="text-xs font-mono font-semibold px-2.5 py-1 rounded-lg bg-coral-400/15 text-coral-700 dark:text-coral-300 border border-coral-400/30">
                 secp256k1 + BLST
