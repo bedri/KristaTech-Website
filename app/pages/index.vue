@@ -397,7 +397,7 @@ const researchPapers = computed(() => {
             </span>
             <span class="hidden sm:inline text-cobalt-200 dark:text-slate-700">•</span>
             <span class="hidden sm:inline text-xs font-mono text-slate-500 dark:text-slate-400">
-              Core v1.5.6.0
+              Core v1.5.7.0
             </span>
           </div>
 
@@ -1019,8 +1019,8 @@ const researchPapers = computed(() => {
               </div>
               <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300">
                 {{ locale === 'tr'
-                  ? '250 KRISTA Coin-Lock (%8 özel koltuk + Tier 2A taşma) veya 10 KRISTA PoW-Lock / Zero-Coin Açık PoW (240 blok kira, %12 açık koltuk, 3x%4) ile ADAM turlarına ve dahili 1-Click CPU/GPU madenciliğine katılır.'
-                  : 'Participates via 250 KRISTA Coin-Lock (8% dedicated seat + Tier 2A overflow) or 10 KRISTA PoW-Lock / Zero-Coin Open PoW (240-block lease, 12% open seats, 3x4%) in ADAM rounds with built-in 1-Click GUI & external CPU/GPU mining.' }}
+                  ? '250 KRISTA Coin-Lock (%8 izole özel koltuk) veya 10 KRISTA PoW-Lock / Zero-Coin Açık PoW (240 blok kira, %12 açık koltuk, 3x%4) ve 65:16:4 Karekök Koordinatör VRF ile ADAM turlarına ve dahili 1-Click CPU/GPU madenciliğine katılır.'
+                  : 'Participates via 250 KRISTA Coin-Lock (8% strictly isolated seat) or 10 KRISTA PoW-Lock / Zero-Coin Open PoW (240-block lease, 12% open seats, 3x4%) with 65:16:4 Quadratic Coordinator VRF and built-in 1-Click GUI & external CPU/GPU mining.' }}
               </p>
             </div>
 
